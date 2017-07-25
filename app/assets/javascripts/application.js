@@ -15,4 +15,4 @@
 //= require jquery3
 //= require tether
 //= require bootstrap
-//= require_tree .
+//= require_tree ./jupiter

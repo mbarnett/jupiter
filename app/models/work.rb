@@ -25,11 +25,12 @@ class Work < JupiterCore::LockedLdpObject
   end
 
   def self.valid_visibilities
-    super + [:embargo]
+    super + ['embargo']
   end
 
   unlocked do
     validates :embargo_end_date, presence: true, if: ->(work) { work.visibility == :embargo }
+    validates :embargo_end_date, absence: true, if: ->(work) { work.visibility != :embargo }
 
     def add_to_path(community_id, collection_id)
       self.member_of_paths += ["#{community_id}/#{collection_id}"]

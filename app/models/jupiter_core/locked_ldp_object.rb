@@ -222,7 +222,7 @@ module JupiterCore
     end
 
     def self.valid_visibilities
-      [:public, :private, :authenticated]
+      ['public', 'private', 'authenticated']
     end
 
     private
@@ -258,9 +258,9 @@ module JupiterCore
 
       private
 
-      def perform_solr_query(q, fq, facet, facet_fields = [])
+      def perform_solr_query(q, fq, facet, facet_fields = [], model_restriction = %Q(_query_:"{!raw f=has_model_ssim}#{derived_af_class_name}"))
         query = []
-        query << %Q(_query_:"{!raw f=has_model_ssim}#{derived_af_class_name}")
+        query << model_restriction
         query.append(q) if q.present?
 
         response = ActiveFedora::SolrService.instance.conn.get('select', params: { q: query.join(' AND '),
@@ -357,6 +357,8 @@ module JupiterCore
             JupiterCore::Indexer
           end
 
+          # Methods defined on the +owning_object+ can be called by the "unlocked" methods defined on the ActiveFedora
+          # object
           def method_missing(name, *args, &block)
             if owning_object.respond_to?(name, true)
               owning_object.send(name, *args, &block)

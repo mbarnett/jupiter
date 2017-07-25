@@ -1,1 +1,25 @@
 <h2>Admin</h2>
+
+Communities:
+<div class="col" >
+  <ul id="admin-collection-list" class="list-group">
+
+    <% @communities.each do |community| %>
+
+      <li class="list-group-item">
+        <%= link_to community.title, community_path(community)%>
+
+        <div class="ml-auto">
+          <div class="btn-group">
+            <%= link_to 'Edit', edit_community_path(community), class:'btn btn-secondary' %>
+            <button type="button" class="btn btn-secondary view-community-collections" data-community-id="<%=community.id%>">Collections</button>
+            <%= button_to "Delete", community_path(community), class: 'btn btn-danger', method: :delete, data: {confirm: 'Are you sure?' } %>
+          </div>
+        </div>
+      </li>
+
+      <ul class="list-group collapse" data-community-id="<%=community.id%>"></ul>
+
+    <% end %>
+  </ul>
+</div>

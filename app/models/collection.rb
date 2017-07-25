@@ -5,6 +5,10 @@ class Collection < JupiterCore::LockedLdpObject
   has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :facet]
   has_attribute :community_id, ::VOCABULARY[:ualib].path, solrize_for: :pathing
 
+  def community
+    Community.find(community_id)
+  end
+
   def path
     "#{community_id}/#{id}"
   end

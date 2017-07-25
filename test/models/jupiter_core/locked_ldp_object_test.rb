@@ -32,29 +32,29 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
   end
 
   # this fails if the call to super doesn't happen in JupiterCore::LockedLdpObject.inherited
-  def test_inheritance_is_tracking_properly
+  test 'inheritance is being tracked properly' do
     assert_includes JupiterCore::LockedLdpObject.descendants, @@klass
   end
 
-  def test_safe_attributes_never_includes_id
+  test 'the list of safe attributes never includes the id' do
     JupiterCore::LockedLdpObject.descendants.each do |klass|
       assert_not_includes klass.safe_attributes, :id
     end
   end
 
-  def test_shared_indexer_is_used
+  test 'the shared indexer is being used' do
     assert_equal @@klass.send(:derived_af_class).indexer, JupiterCore::Indexer
   end
 
-  def test_af_object_included_named_modules
+  test 'derived AF objects are including the proper modules' do
     assert @@klass.send(:derived_af_class).include? Hydra::Works::WorkBehavior
   end
 
-  def test_attribute_definitions
+  test 'attribute definitions are working' do
     assert_equal [:creator, :id, :member_of_paths, :owner, :title, :visibility], @@klass.attribute_names.sort
   end
 
-  def test_attribute_metadata
+  test 'attribute metadata is being tracked properly' do
     title_metadata = @@klass.attribute_metadata(:title)
 
     assert_instance_of Hash, title_metadata
@@ -67,7 +67,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert @@klass.attribute_metadata(:member_of_paths)[:multiple]
   end
 
-  def test_solr_calculated_attributes
+  test 'solr calculated attributes are working properly' do
     obj = @@klass.new_locked_ldp_object(title: generate_random_string)
 
     obj.unlock_and_fetch_ldp_object do |uo|
@@ -77,18 +77,18 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     end
   end
 
-  def test_reverse_solr_name_lookup
+  test 'reverse solr name lookup is working properly' do
     assert_equal :title, @@klass.solr_name_to_attribute_name('title_tesim')
     assert_equal :member_of_paths, @@klass.solr_name_to_attribute_name('member_of_paths_dpsim')
   end
 
-  def test_default_constructor_is_private
+  test 'the default constructor is private' do
     assert_raises ::NoMethodError do
       @@klass.new
     end
   end
 
-  def test_locked_object_enforcement
+  test 'locked objects are not mutatable' do
     original_title = generate_random_string
     obj = @@klass.new_locked_ldp_object(title: original_title)
 
@@ -113,7 +113,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert_equal original_title, obj.title
   end
 
-  def test_unlocked_methods_can_call_locked_methods
+  test 'unlocked methods can call locked objects' do
     title = generate_random_string
     obj = @@klass.new_locked_ldp_object(title: title)
 
@@ -122,7 +122,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     end
   end
 
-  def test_unlocked_methods_can_mutate
+  test 'unlocked methods can perform mutation' do
     orig_title = generate_random_string
     obj = @@klass.new_locked_ldp_object(title: orig_title)
 
@@ -144,14 +144,14 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert_equal another_new_title, obj.title
   end
 
-  def test_object_inspecting
+  test '#inspect works as expected' do
     title = generate_random_string
     obj = @@klass.new_locked_ldp_object(title: title)
     assert_equal "#<AnonymousClass id: nil, visibility: nil, owner: nil, title: \"#{title}\", creator: nil,"\
                  ' member_of_paths: []>', obj.inspect
   end
 
-  def test_inheritance_of_attributes
+  test 'attribute inheritance is working' do
     subclass = Class.new(@@klass) do
       has_attribute :subject, ::RDF::Vocab::DC.subject, solrize_for: :search
     end
@@ -161,7 +161,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert_equal [:creator, :id, :member_of_paths, :owner, :title, :visibility], @@klass.attribute_names.sort
   end
 
-  def test_attributes
+  test 'attributes are declaring properly' do
     title = generate_random_string
     obj = @@klass.new_locked_ldp_object(title: title)
     assert obj.attributes.key? 'title'
@@ -173,7 +173,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert_equal title, obj.display_attributes['title']
   end
 
-  def test_activemodel_integration
+  test 'active model integration is working' do
     obj = @@klass.new_locked_ldp_object
 
     assert_instance_of ActiveModel::Errors, obj.errors
@@ -191,7 +191,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert_predicate obj, :valid?
   end
 
-  def test_basic_solr_finds
+  test 'solr integration is working' do
     assert @@klass.all.count == 0
 
     creator = generate_random_string

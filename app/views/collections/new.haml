@@ -1,6 +1,7 @@
 %h1.mt-3 Create Collection
 = simple_form_for [@community, @collection] do |f|
-	- Collection.attribute_names.each do |prop|
-		= f.input prop
+  = f.input :title
+  = f.collection_radio_buttons :visibility, [['public', 'Public'], ['embargo', 'Embargoed'], ['authenticated', 'Authenticated'], ['private', 'Private']], :first, :last
+  = f.input :community_id
 
-	= f.button :submit, class: 'btn btn-primary'
+  = f.button :submit, class: 'btn btn-primary'
