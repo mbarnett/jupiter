@@ -24,4 +24,8 @@ class ApplicationController < ActionController::Base
     @current_user = nil
   end
 
+  def current_site_notifications
+    SiteNotification.current
+  end
+
 end
