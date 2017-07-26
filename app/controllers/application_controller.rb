@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
+  
+   helper_method :current_site_notifications
 
   protected
 
@@ -26,6 +28,11 @@ class ApplicationController < ActionController::Base
 
   def current_site_notifications
     SiteNotification.current
+  end
+
+  # TODO: remove shim
+  def current_user
+    User.first
   end
 
 end

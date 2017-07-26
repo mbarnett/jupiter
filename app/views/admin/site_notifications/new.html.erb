@@ -1,0 +1,45 @@
+<h4>Manage Notifications</h4>
+  <div class="col" >
+
+    <%= simple_form_for [:admin, @new_notification] do |f| %>
+      <%= f.input :message %>
+      <%= f.submit 'Post', class: 'float-right'%>
+    <% end %>
+
+    <h5 class="mt-5">Current Notifications:</h5>
+
+    <div class="list-group">
+      <% unless current_notifications.present? %>
+        <div class="list-group-item">No Current Notifications</div>
+      <% end %>
+
+      <% current_notifications.each do |notification| %>
+        <div class="list-group-item flex-column align-items-start justify-content-between">
+          <div class="d-flex w-100 justify-content-between">
+            <h6><%= notification.message %></h6>
+            <%= button_to "Remove", admin_site_notification_path(notification), method: :delete, class: 'btn btn-danger', data: {confirm: 'Are you sure you want to remove this message?'} %>
+          </div>
+          <p><em>Posted at: <%= notification.created_at %></em></p>
+        </div>
+      <% end %>
+    </div>
+
+    <h5 class="mt-5">Past Notifications:</h5>
+
+    <div class="list-group">
+      <% unless past_notifications.present? %>
+        <div class="list-group-item">No Past Notifications</div>
+      <% end %>
+
+      <% past_notifications.each do |notification| %>
+        <div class="list-group-item flex-column align-items-start justify-content-between">
+          <h6><%= notification.message %></h6>
+
+          <div class="d-flex w-100 justify-content-between">
+            <p><em>Posted at: <%= notification.created_at %></em></p>
+            <p><em>Removed at: <%= notification.removed_at %></em></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>

@@ -13,6 +13,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     resources :communities_and_collections, only: [:create, :new, :index]
+    resources :site_notifications, only: [:new, :destroy, :create]
   end
   
   get 'login', to: 'sessions#new'

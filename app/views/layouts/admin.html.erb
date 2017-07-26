@@ -1,42 +1,44 @@
 <% content_for(:head) do %>
-    <%= javascript_include_tag 'admin' %>
+  <%= javascript_include_tag 'admin' %>
 <% end %>
 
 <% content_for(:content) do %>
-    <div class="row" >
-        <div class="col-2" >
-            <%= render 'sidebar_group', title: 'Items' do %>
-                <li><a href="">Manage Items</a></li>
-                <li><a href="">Add New Item</a></li>
-            <% end %>
+  <div class="row" >
+    <div class="col-2" >
+      <h2>Admin</h2>
 
-            <%= render 'sidebar_group', title: 'Users' do %>
-                <li><a href="">Manage Communities / Collections</a></li>
-                <li><a href="">Add New Community</a></li>
-                <li><a href="">Add New Collection</a></li>
-            <% end %>
+      <%= render 'sidebar_group', title: 'Items' do %>
+        <li><a href="">Manage Items</a></li>
+        <li><a href="">Add New Item</a></li>
+      <% end %>
 
-            <%= render 'sidebar_group', title: 'Administrator Notifications' do %>
-                <li><a href="">Manage Notifications</a></li>
-            <% end %>
+      <%= render 'sidebar_group', title: 'Users' do %>
+        <li><%= link_to 'Manage Communities / Collections', admin_communities_and_collections_path %></li>
+        <li><a href="">Add New Community</a></li>
+        <li><a href="">Add New Collection</a></li>
+      <% end %>
 
-            <%= render 'sidebar_group', title: 'Pages' do %>
-                <li><a href="">Manage Pages</a></li>
-                <li><a href="">Add New Page</a></li>
-                <li><a href="">Edit Footer</a></li>
-            <% end %>
+      <%= render 'sidebar_group', title: 'Administrator Notifications' do %>
+        <li><%= link_to 'Manage Notifications', new_admin_site_notification_path %></li>
+      <% end %>
 
-            <%= render 'sidebar_group', title: 'Analytics' do %>
-                <li><a href="">View Analytics</a></li>
-            <% end %>
+      <%= render 'sidebar_group', title: 'Pages' do %>
+        <li><a href="">Manage Pages</a></li>
+        <li><a href="">Add New Page</a></li>
+        <li><a href="">Edit Footer</a></li>
+      <% end %>
 
-        </div>
-
-        <div class="col" >
-            <%= yield  %>
-        </div>
+      <%= render 'sidebar_group', title: 'Analytics' do %>
+        <li><a href="">View Analytics</a></li>
+      <% end %>
 
     </div>
+
+    <div class="col" >
+      <%= yield  %>
+    </div>
+
+  </div>
 <% end %>
 
 <%= render template: 'layouts/application' %>
