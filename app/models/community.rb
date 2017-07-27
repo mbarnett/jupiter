@@ -17,5 +17,4 @@ class Community < JupiterCore::LockedLdpObject
     end
   end
 
-
 end

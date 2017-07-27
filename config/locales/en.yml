@@ -30,11 +30,11 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
-  site_name: 'Jupiter'
+  site_name: 'ERA'
   application:
     navbar:
       search:
-        placeholder: "Search Jupiter..."
+        placeholder: "Search ERA..."
         button_text: 'Search'
       links:
         communities: 'Communities'

@@ -258,9 +258,9 @@ module JupiterCore
 
       private
 
-      def perform_solr_query(q, fq, facet, facet_fields = [], model_restriction = %Q(_query_:"{!raw f=has_model_ssim}#{derived_af_class_name}"))
+      def perform_solr_query(q, fq, facet, facet_fields = [])
         query = []
-        query << model_restriction
+        query << %Q(_query_:"{!raw f=has_model_ssim}#{derived_af_class_name}")
         query.append(q) if q.present?
 
         response = ActiveFedora::SolrService.instance.conn.get('select', params: { q: query.join(' AND '),

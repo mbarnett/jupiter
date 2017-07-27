@@ -2,18 +2,13 @@ require 'test_helper'
 
 class SiteNotificationTest < ActiveSupport::TestCase
 
-  test 'cannot create a blank notification' do
-    notification = SiteNotification.new
-
-    assert_not notification.valid?
-    assert_includes notification.errors[:message], "can't be blank"
+  context 'associations' do
+    should belong_to(:user)
   end
 
-  test 'must be associated with a user' do
-    notification = SiteNotification.new(message: 'A test message')
-    assert_not notification.valid?
-    assert_includes notification.errors[:user], "can't be blank"
-    assert_includes notification.errors[:user], 'must exist'
+  context 'validations' do
+    should validate_presence_of(:message)
+    should validate_presence_of(:user)
   end
 
   test 'current notifications scope' do
@@ -26,4 +21,5 @@ class SiteNotificationTest < ActiveSupport::TestCase
     assert_includes SiteNotification.past, site_notifications(:past_notification)
     assert_includes SiteNotification.past, site_notifications(:another_past_notification)
   end
+
 end

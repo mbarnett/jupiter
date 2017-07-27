@@ -9,7 +9,7 @@ class CommunitiesController < ApplicationController
   end
 
   def show
-    @community = community = Community.find(params[:id])
+    @community = Community.find(params[:id])
     respond_to do |format|
       format.html
       format.json { render json: @community.member_collections }

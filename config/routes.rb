@@ -15,7 +15,7 @@ Rails.application.routes.draw do
     resources :communities_and_collections, only: [:create, :new, :index]
     resources :site_notifications, only: [:new, :destroy, :create]
   end
-  
+
   get 'login', to: 'sessions#new'
   match '/auth/:provider/callback', to: 'sessions#create', via: [:get, :post]
   match '/auth/failure', to: 'sessions#failure', via: [:get, :post]
