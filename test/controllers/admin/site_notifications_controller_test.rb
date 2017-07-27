@@ -2,6 +2,7 @@ require 'test_helper'
 
 class Admin::SiteNotificationsControllerTest < ActionDispatch::IntegrationTest
 
+  #  using SignInRefinement
   test 'new' do
     sign_in_as users(:admin)
 
@@ -10,13 +11,16 @@ class Admin::SiteNotificationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'create' do
-    sign_in_as users(:admin)
-#    sleep 5
+    #   sign_in_as users(:admin)
+    #    @request.session[:user_id] = users(:admin).id
+    #    sleep 5
 
-    assert_difference('SiteNotification.current.count') do
-      post admin_site_notifications_url, params: { site_notification: { message: 'Some message' } }
+    as_user users(:admin) do
+      assert_difference('SiteNotification.current.count') do
+        post admin_site_notifications_url, params: { site_notification: { message: 'Some message' } }
+      end
+      assert_redirected_to new_admin_site_notification_url
     end
-    assert_redirected_to new_admin_site_notification_url
   end
 
   test 'destroy' do

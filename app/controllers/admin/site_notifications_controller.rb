@@ -9,7 +9,7 @@ class Admin::SiteNotificationsController < Admin::AdminController
   def create
     @new_notification = SiteNotification.new(notification_params)
     @new_notification.user = current_user
-    #binding.pry
+
     if @new_notification.save
       redirect_to new_admin_site_notification_path
     else

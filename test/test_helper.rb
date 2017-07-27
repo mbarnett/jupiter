@@ -37,6 +37,19 @@ class ActiveSupport::TestCase
     post "/auth/#{identity.provider}/callback"
   end
 
+  def as_user(user)
+    ApplicationController.class_eval do
+      alias_method :old_current_user, :current_user
+      define_method :current_user, -> { return user }
+    end
+
+    yield
+
+    ApplicationController.class_eval do
+      alias_method :current_user, :old_current_user
+    end
+  end
+
   # Returns true if a test user is logged in.
   def logged_in?
     session[:user_id].present?
