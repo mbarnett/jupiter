@@ -1,9 +1,9 @@
 require 'test_helper'
 
-class LockedLdpObjectTest < ActiveSupport::TestCase
+class ProxiedRemoteObjectTest < ActiveSupport::TestCase
 
-  @@klass = Class.new(JupiterCore::LockedLdpObject) do
-    ldp_object_includes Hydra::Works::WorkBehavior
+  @@klass = Class.new(JupiterCore::ProxiedRemoteObject) do
+    remote_object_includes Hydra::Works::WorkBehavior
     has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :facet]
     has_attribute :creator, ::RDF::Vocab::DC.creator, solrize_for: [:search, :facet]
     has_multival_attribute :member_of_paths, ::VOCABULARY[:ualib].path, solrize_for: :pathing
@@ -36,13 +36,13 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     end
   end
 
-  # this fails if the call to super doesn't happen in JupiterCore::LockedLdpObject.inherited
+  # this fails if the call to super doesn't happen in JupiterCore::ProxiedRemoteObject.inherited
   test 'inheritance is being tracked properly' do
-    assert_includes JupiterCore::LockedLdpObject.descendants, @@klass
+    assert_includes JupiterCore::ProxiedRemoteObject.descendants, @@klass
   end
 
   test 'the list of safe attributes never includes the id' do
-    JupiterCore::LockedLdpObject.descendants.each do |klass|
+    JupiterCore::ProxiedRemoteObject.descendants.each do |klass|
       assert_not_includes klass.safe_attributes, :id
     end
   end
@@ -75,9 +75,9 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
   test 'solr calculated attributes are working properly' do
     title = generate_random_string
-    obj = @@klass.new_locked_ldp_object(title: title)
+    obj = @@klass.new_proxied_remote_object(title: title)
 
-    obj.unlock_and_fetch_ldp_object do |uo|
+    obj.unlock_and_load_remote_object do |uo|
       solr_doc = uo.to_solr
 
       assert solr_doc.key? 'my_solr_doc_attr_tesim'
@@ -98,7 +98,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
   test 'locked objects are not mutatable' do
     original_title = generate_random_string
-    obj = @@klass.new_locked_ldp_object(title: original_title)
+    obj = @@klass.new_proxied_remote_object(title: original_title)
 
     assert_equal original_title, obj.title
 
@@ -115,7 +115,9 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     end
 
     assert_raises JupiterCore::LockedInstanceError do
-      obj.unlock_and_fetch_ldp_object { |uo| uo.unlocked_method_dont_let_locked_methods_mutate(generate_random_string) }
+      obj.unlock_and_load_remote_object do |uo|
+        uo.unlocked_method_dont_let_locked_methods_mutate(generate_random_string)
+      end
     end
 
     assert_equal original_title, obj.title
@@ -123,20 +125,20 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
   test 'unlocked methods can call locked objects' do
     title = generate_random_string
-    obj = @@klass.new_locked_ldp_object(title: title)
+    obj = @@klass.new_proxied_remote_object(title: title)
 
-    obj.unlock_and_fetch_ldp_object do |uo|
+    obj.unlock_and_load_remote_object do |uo|
       assert_equal "Title is: #{title}", uo.safe_locked_method
     end
   end
 
   test 'unlocked methods can perform mutation' do
     orig_title = generate_random_string
-    obj = @@klass.new_locked_ldp_object(title: orig_title)
+    obj = @@klass.new_proxied_remote_object(title: orig_title)
 
     new_title = generate_random_string
 
-    obj.unlock_and_fetch_ldp_object do |unlocked_object|
+    obj.unlock_and_load_remote_object do |unlocked_object|
       assert_equal orig_title, unlocked_object.title
       unlocked_object.title = new_title
     end
@@ -145,7 +147,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
     another_new_title = generate_random_string
 
-    obj.unlock_and_fetch_ldp_object do |unlocked_object|
+    obj.unlock_and_load_remote_object do |unlocked_object|
       unlocked_object.unlocked_method_can_mutate(another_new_title)
     end
 
@@ -154,7 +156,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
   test '#inspect works as expected' do
     title = generate_random_string
-    obj = @@klass.new_locked_ldp_object(title: title)
+    obj = @@klass.new_proxied_remote_object(title: title)
     assert_equal "#<AnonymousClass id: nil, visibility: nil, owner: nil, record_created_at: nil, title: \"#{title}\","\
                  ' creator: nil, member_of_paths: []>', obj.inspect
   end
@@ -173,7 +175,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
   test 'attributes are declaring properly' do
     title = generate_random_string
-    obj = @@klass.new_locked_ldp_object(title: title)
+    obj = @@klass.new_proxied_remote_object(title: title)
     assert obj.attributes.key? 'title'
     assert_equal title, obj.attributes['title']
     assert obj.attributes.key? 'id'
@@ -184,7 +186,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
   end
 
   test 'active model integration is working' do
-    obj = @@klass.new_locked_ldp_object
+    obj = @@klass.new_proxied_remote_object
 
     assert_instance_of ActiveModel::Errors, obj.errors
     assert_not_predicate obj.errors, :any?
@@ -192,7 +194,7 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     assert_not_predicate obj, :changed?
     assert_not_predicate obj, :valid?
 
-    obj.unlock_and_fetch_ldp_object do |uo|
+    obj.unlock_and_load_remote_object do |uo|
       uo.title = 'Title'
       uo.visibility = JupiterCore::VISIBILITY_PUBLIC
       uo.owner = users(:regular_user).id
@@ -208,13 +210,13 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
     creator = generate_random_string
     first_title = generate_random_string
 
-    obj = @@klass.new_locked_ldp_object(title: first_title, creator: creator, owner: users(:regular_user).id,
-                                        visibility: 'public')
+    obj = @@klass.new_proxied_remote_object(title: first_title, creator: creator, owner: users(:regular_user).id,
+                                            visibility: 'public')
 
     assert obj.record_created_at.nil?
 
     freeze_time do
-      obj.unlock_and_fetch_ldp_object(&:save!)
+      obj.unlock_and_load_remote_object(&:save!)
       assert obj.id.present?
       assert obj.record_created_at.present?
       assert_equal obj.record_created_at, Time.current
@@ -226,9 +228,9 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
     second_title = generate_random_string
 
-    another_obj = @@klass.new_locked_ldp_object(title: second_title, creator: creator, owner: users(:regular_user).id,
-                                                visibility: 'public')
-    another_obj.unlock_and_fetch_ldp_object(&:save!)
+    another_obj = @@klass.new_proxied_remote_object(title: second_title, creator: creator,
+                                                    owner: users(:regular_user).id, visibility: 'public')
+    another_obj.unlock_and_load_remote_object(&:save!)
 
     assert @@klass.all.count == 2
 
@@ -249,9 +251,9 @@ class LockedLdpObjectTest < ActiveSupport::TestCase
 
   #  (╯°□°）╯︵ ┻━┻)
   test 'Validation callbacks actually, yknow, run. Seriously. I have to test for this.' do
-    obj = @@klass.new_locked_ldp_object(title: generate_random_string)
+    obj = @@klass.new_proxied_remote_object(title: generate_random_string)
 
-    obj.unlock_and_fetch_ldp_object do |uo|
+    obj.unlock_and_load_remote_object do |uo|
       before_mock = MiniTest::Mock.new
       before_mock.expect :call, true
 

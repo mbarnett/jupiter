@@ -4,13 +4,13 @@ class CollectionsControllerTest < ActionDispatch::IntegrationTest
 
   def before_all
     super
-    @community = Community.new_locked_ldp_object(title: 'Nice community',
-                                                 owner: 1)
-    @community.unlock_and_fetch_ldp_object(&:save!)
-    @collection = Collection.new_locked_ldp_object(community_id: @community.id,
-                                                   title: 'Nice collection',
-                                                   owner: 1)
-    @collection.unlock_and_fetch_ldp_object(&:save!)
+    @community = Community.new_proxied_remote_object(title: 'Nice community',
+                                                     owner: 1)
+    @community.unlock_and_load_remote_object(&:save!)
+    @collection = Collection.new_proxied_remote_object(community_id: @community.id,
+                                                       title: 'Nice collection',
+                                                       owner: 1)
+    @collection.unlock_and_load_remote_object(&:save!)
   end
 
   def setup
@@ -52,11 +52,11 @@ class CollectionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should destroy collection' do
-    community = Community.new_locked_ldp_object(title: 'Nice community',
-                                                owner: 1).unlock_and_fetch_ldp_object(&:save!)
-    collection = Collection.new_locked_ldp_object(community_id: @community.id,
-                                                  title: 'Nice collection',
-                                                  owner: 1).unlock_and_fetch_ldp_object(&:save!)
+    community = Community.new_proxied_remote_object(title: 'Nice community',
+                                                    owner: 1).unlock_and_load_remote_object(&:save!)
+    collection = Collection.new_proxied_remote_object(community_id: @community.id,
+                                                      title: 'Nice collection',
+                                                      owner: 1).unlock_and_load_remote_object(&:save!)
     assert_difference('Collection.count', -1) do
       delete community_collection_url(community, collection)
     end

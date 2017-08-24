@@ -1,6 +1,6 @@
-class Collection < JupiterCore::LockedLdpObject
+class Collection < JupiterCore::ProxiedRemoteObject
 
-  ldp_object_includes Hydra::Works::CollectionBehavior
+  remote_object_includes Hydra::Works::CollectionBehavior
 
   has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :facet]
   has_attribute :community_id, ::VOCABULARY[:ualib].path, solrize_for: :pathing

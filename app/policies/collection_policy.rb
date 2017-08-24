@@ -1,4 +1,4 @@
-class CollectionPolicy < LockedLdpObjectPolicy
+class CollectionPolicy < ProxiedRemoteObjectPolicy
 
   def index?
     true

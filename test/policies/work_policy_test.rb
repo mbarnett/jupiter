@@ -5,7 +5,7 @@ class WorkPolicyTest < ActiveSupport::TestCase
   context 'admin user' do
     should 'have proper authorization over works' do
       current_user = users(:admin)
-      work = Work.new_locked_ldp_object
+      work = Work.new_proxied_remote_object
 
       assert WorkPolicy.new(current_user, work).index?
       assert WorkPolicy.new(current_user, work).create?
@@ -20,7 +20,7 @@ class WorkPolicyTest < ActiveSupport::TestCase
   context 'general user' do
     should 'only be able to access your own works' do
       current_user = users(:regular_user)
-      work = Work.new_locked_ldp_object(owner: current_user.id)
+      work = Work.new_proxied_remote_object(owner: current_user.id)
 
       assert WorkPolicy.new(current_user, work).index?
       assert WorkPolicy.new(current_user, work).show?
@@ -36,7 +36,7 @@ class WorkPolicyTest < ActiveSupport::TestCase
       current_user = users(:regular_user)
       another_user = users(:admin)
 
-      work = Work.new_locked_ldp_object(owner: another_user.id, visibility: JupiterCore::VISIBILITY_PUBLIC)
+      work = Work.new_proxied_remote_object(owner: another_user.id, visibility: JupiterCore::VISIBILITY_PUBLIC)
 
       assert WorkPolicy.new(current_user, work).index?
       assert WorkPolicy.new(current_user, work).show?
@@ -50,7 +50,7 @@ class WorkPolicyTest < ActiveSupport::TestCase
   context 'anon user' do
     should 'only be able to see index and show of works' do
       current_user = nil
-      work = Work.new_locked_ldp_object(visibility: JupiterCore::VISIBILITY_PUBLIC)
+      work = Work.new_proxied_remote_object(visibility: JupiterCore::VISIBILITY_PUBLIC)
 
       assert WorkPolicy.new(current_user, work).index?
       assert WorkPolicy.new(current_user, work).show?

@@ -1,4 +1,4 @@
-class CommunityPolicy < LockedLdpObjectPolicy
+class CommunityPolicy < ProxiedRemoteObjectPolicy
 
   def index?
     true

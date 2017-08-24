@@ -1,7 +1,7 @@
 class SearchTest < ActiveSupport::TestCase
 
-  @@klass = Class.new(JupiterCore::LockedLdpObject) do
-    ldp_object_includes Hydra::Works::WorkBehavior
+  @@klass = Class.new(JupiterCore::ProxiedRemoteObject) do
+    remote_object_includes Hydra::Works::WorkBehavior
     has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :facet]
     has_attribute :creator, ::RDF::Vocab::DC.creator, solrize_for: [:search, :facet]
     has_multival_attribute :member_of_paths, ::VOCABULARY[:ualib].path, solrize_for: :pathing
@@ -32,16 +32,16 @@ class SearchTest < ActiveSupport::TestCase
     second_title = generate_random_string
     creator = generate_random_string
 
-    obj = @@klass.new_locked_ldp_object(title: first_title, creator: creator, visibility: 'public',
-                                        owner: users(:regular_user).id)
-    another_obj = @@klass.new_locked_ldp_object(title: second_title, creator: creator, visibility: 'public',
-                                                owner: users(:regular_user).id)
-    a_private_object = @@klass.new_locked_ldp_object(title: generate_random_string, creator: generate_random_string,
-                                                     visibility: 'private', owner: users(:regular_user).id)
+    obj = @@klass.new_proxied_remote_object(title: first_title, creator: creator, visibility: 'public',
+                                            owner: users(:regular_user).id)
+    another_obj = @@klass.new_proxied_remote_object(title: second_title, creator: creator, visibility: 'public',
+                                                    owner: users(:regular_user).id)
+    a_private_object = @@klass.new_proxied_remote_object(title: generate_random_string, creator: generate_random_string,
+                                                         visibility: 'private', owner: users(:regular_user).id)
 
-    obj.unlock_and_fetch_ldp_object(&:save!)
-    another_obj.unlock_and_fetch_ldp_object(&:save!)
-    a_private_object.unlock_and_fetch_ldp_object(&:save!)
+    obj.unlock_and_load_remote_object(&:save!)
+    another_obj.unlock_and_load_remote_object(&:save!)
+    a_private_object.unlock_and_load_remote_object(&:save!)
 
     search_results = JupiterCore::Search.search(models: @@klass, q: '')
 

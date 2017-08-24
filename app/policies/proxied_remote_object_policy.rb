@@ -1,5 +1,5 @@
-# Special policy for LockedLdpObjects to inherit from
-class LockedLdpObjectPolicy < ApplicationPolicy
+# Special policy for ProxiedRemoteObjects to inherit from
+class ProxiedRemoteObjectPolicy < ApplicationPolicy
 
   def permitted_attributes
     model_class.safe_attributes

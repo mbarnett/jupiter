@@ -1,6 +1,6 @@
-class Work < JupiterCore::LockedLdpObject
+class Work < JupiterCore::ProxiedRemoteObject
 
-  ldp_object_includes Hydra::Works::WorkBehavior
+  remote_object_includes Hydra::Works::WorkBehavior
 
   VISIBILITY_EMBARGO = 'embargo'.freeze
 

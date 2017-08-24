@@ -1,4 +1,4 @@
-class WorkPolicy < LockedLdpObjectPolicy
+class WorkPolicy < ProxiedRemoteObjectPolicy
 
   def index?
     true

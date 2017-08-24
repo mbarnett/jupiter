@@ -3,15 +3,15 @@ require 'test_helper'
 class WorkTest < ActiveSupport::TestCase
 
   test 'there is no default visibility' do
-    work = Work.new_locked_ldp_object
+    work = Work.new_proxied_remote_object
 
     assert_nil work.visibility
   end
 
   test 'unknown visibilities are not valid' do
-    work = Work.new_locked_ldp_object
+    work = Work.new_proxied_remote_object
 
-    work.unlock_and_fetch_ldp_object do |unlocked_work|
+    work.unlock_and_load_remote_object do |unlocked_work|
       unlocked_work.visibility = :some_fake_visibility
     end
 
@@ -25,8 +25,8 @@ class WorkTest < ActiveSupport::TestCase
   end
 
   test 'embargo_end_date must be present if visibility is embargo' do
-    work = Work.new_locked_ldp_object
-    work.unlock_and_fetch_ldp_object do |unlocked_work|
+    work = Work.new_proxied_remote_object
+    work.unlock_and_load_remote_object do |unlocked_work|
       unlocked_work.visibility = Work::VISIBILITY_EMBARGO
     end
 
@@ -36,8 +36,8 @@ class WorkTest < ActiveSupport::TestCase
   end
 
   test 'embargo_end_date must be blank for non-embargo visibilities' do
-    work = Work.new_locked_ldp_object
-    work.unlock_and_fetch_ldp_object do |unlocked_work|
+    work = Work.new_proxied_remote_object
+    work.unlock_and_load_remote_object do |unlocked_work|
       unlocked_work.visibility = JupiterCore::VISIBILITY_PUBLIC
       unlocked_work.embargo_end_date = '1992-02-01'
     end
@@ -50,11 +50,11 @@ class WorkTest < ActiveSupport::TestCase
   end
 
   test '#add_to_path assigns paths properly' do
-    work = Work.new_locked_ldp_object
+    work = Work.new_proxied_remote_object
     community_id = generate_random_string
     collection_id = generate_random_string
 
-    work.unlock_and_fetch_ldp_object do |unlocked_work|
+    work.unlock_and_load_remote_object do |unlocked_work|
       unlocked_work.add_to_path(community_id, collection_id)
     end
 

@@ -44,7 +44,7 @@ class JupiterCore::DeferredSolrQuery
 
   def each
     reified_result_set.map do |res|
-      obj = JupiterCore::LockedLdpObject.reify_solr_doc(res)
+      obj = JupiterCore::ProxiedRemoteObject.reify_solr_doc(res)
       yield(obj)
       obj
     end
@@ -78,7 +78,7 @@ class JupiterCore::DeferredSolrQuery
 
   private
 
-  # Defer to Kaminari configuration in the +LockedLdpObject+ model
+  # Defer to Kaminari configuration in the +ProxiedRemoteObject+ model
   def method_missing(method, *args, &block)
     if [:default_per_page, :max_per_page, :max_pages, :max_pages_per].include? method
       criteria[:model].send(method, *args, &block) if criteria[:model].respond_to?(method)

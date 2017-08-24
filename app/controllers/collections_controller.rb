@@ -9,17 +9,17 @@ class CollectionsController < ApplicationController
   end
 
   def new
-    @collection = Collection.new_locked_ldp_object(community_id: params[:community_id])
+    @collection = Collection.new_proxied_remote_object(community_id: params[:community_id])
     authorize @collection
     @community = Community.find(params[:community_id])
   end
 
   def create
     @collection =
-      Collection.new_locked_ldp_object(permitted_attributes(Collection)
+      Collection.new_proxied_remote_object(permitted_attributes(Collection)
                                         .merge(owner: current_user&.id))
     authorize @collection
-    @collection.unlock_and_fetch_ldp_object(&:save!)
+    @collection.unlock_and_load_remote_object(&:save!)
 
     @community = Community.find(params[:community_id])
     redirect_to community_collection_path(@community, @collection)
@@ -35,7 +35,7 @@ class CollectionsController < ApplicationController
   def update
     @collection = Collection.find(params[:id])
     authorize @collection
-    @collection.unlock_and_fetch_ldp_object do |unlocked_collection|
+    @collection.unlock_and_load_remote_object do |unlocked_collection|
       unlocked_collection.update!(permitted_attributes(Collection))
     end
     flash[:notice] = I18n.t('application.collections.updated')
@@ -45,7 +45,7 @@ class CollectionsController < ApplicationController
   def destroy
     collection = Collection.find(params[:id])
     authorize collection
-    collection.unlock_and_fetch_ldp_object do |uo|
+    collection.unlock_and_load_remote_object do |uo|
       if uo.destroy
         flash[:notice] = I18n.t('application.collections.deleted')
       else
