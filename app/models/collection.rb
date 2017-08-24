@@ -1,4 +1,4 @@
-class Collection < JupiterCore::ProxiedRemoteObject
+class Collection < JupiterCore::CachedRemoteObject
 
   remote_object_includes Hydra::Works::CollectionBehavior
 

@@ -1,4 +1,4 @@
-# JupiterCore::ProxiedRemoteObject classes are lightweight, read-only objects
+# JupiterCore::CachedRemoteObject classes are lightweight, read-only objects
 # TODO: this file could benefit from some reorganization, possibly into several
 # files
 module JupiterCore
@@ -12,7 +12,7 @@ module JupiterCore
   VISIBILITY_PRIVATE = 'private'.freeze
   VISIBILITY_AUTHENTICATED = 'authenticated'.freeze
 
-  class ProxiedRemoteObject
+  class CachedRemoteObject
 
     include ActiveModel::Model
     include ActiveModel::Serializers::JSON
@@ -33,8 +33,8 @@ module JupiterCore
       pathing: :descendent_path
     }.freeze
 
-    # we reserve .new for internal use in constructing ProxiedRemoteObjects. Use the public interface
-    # +new_proxied_remote_object+ for constructing new objects externally.
+    # we reserve .new for internal use in constructing CachedRemoteObjects. Use the public interface
+    # +new_cached_remote_object+ for constructing new objects externally.
     private_class_method :new
 
     # inheritable class attributes (not all class-level attributes in this class should be inherited,
@@ -52,11 +52,11 @@ module JupiterCore
     #
     # yields the underlying mutable +ActiveFedora+ object to the block and returns self for chaining
     #
-    #  locked_obj.unlock_and_load_remote_object do |object|
+    #  locked_obj.unlock_cache_and_load_remote_object do |object|
     #    object.title = 'asdf'
     #    object.save
     #  end
-    def unlock_and_load_remote_object
+    def unlock_cache_and_load_remote_object
       self.remote_object = self.class.send(:derived_af_class).find(id) unless @remote_object.present?
       yield @remote_object
       self
@@ -120,9 +120,9 @@ module JupiterCore
       remote_object.errors
     end
 
-    # Use this to create a new +ProxiedRemoteObjects+ and its underlying LDP instance. attrs populate the new object's
+    # Use this to create a new +CachedRemoteObjects+ and its underlying LDP instance. attrs populate the new object's
     # attributes
-    def self.new_proxied_remote_object(*attrs)
+    def self.new_cached_remote_object(*attrs)
       new(ldp_obj: derived_af_class.new(*attrs))
     end
 
@@ -135,7 +135,7 @@ module JupiterCore
     # attribute for forms to modify. Subclasses should override this and remove any other sensitive attributes from
     # this array
     #
-    # a Work +ProxiedRemoteObject+ might choose to protect its +owner+ attribute by overriding this method:
+    # a Work +CachedRemoteObject+ might choose to protect its +owner+ attribute by overriding this method:
     #
     #  def self.safe_attributes
     #    super - [:owner]
@@ -179,7 +179,7 @@ module JupiterCore
       reverse_solr_name_cache[solr_name]
     end
 
-    # Accepts a string id of an object in the LDP, and returns a +ProxiedRemoteObjects+ representation of that object
+    # Accepts a string id of an object in the LDP, and returns a +CachedRemoteObjects+ representation of that object
     # or raises <tt>JupiterCore::ObjectNotFound</tt> if there is no object corresponding to that id
     def self.find(id)
       results_count, results, _ = JupiterCore::Search.perform_solr_query(q: %Q(_query_:"{!raw f=id}#{id}"),
@@ -191,7 +191,7 @@ module JupiterCore
       new(solr_doc: results.first)
     end
 
-    # Returns an array of all +ProxiedRemoteObject+ in the LDP
+    # Returns an array of all +CachedRemoteObject+ in the LDP
     # def self.all(limit:, offset: )
     def self.all
       JupiterCore::DeferredSolrQuery.new(self)
@@ -202,7 +202,7 @@ module JupiterCore
       all.count
     end
 
-    # Accepts a hash of name-value pairs to query for, and returns an Array of matching +ProxiedRemoteObject+
+    # Accepts a hash of name-value pairs to query for, and returns an Array of matching +CachedRemoteObject+
     #
     # For example:
     #   Work.where(title: 'Test upload')
@@ -257,11 +257,11 @@ module JupiterCore
     # eg)
     #    2.4.0 :003 > solr_doc
     #    => {"system_create_dtsi"=>"2017-08-01T17:07:08Z", "system_modified_dtsi"=>"2017-08-01T17:07:08Z", "has_model_ssim"=>["IRWork"], "id"=>"88489b6e-12dd-4eea-b833-af08782c419e", "visibility_ssim"=>["public"], "owner_ssim"=>[""], "title_tesim"=>["Test"], "subject_tesim"=>[""], "creator_tesim"=>[""], "contributor_tesim"=>[""], "description_tesim"=>[""], "publisher_tesim"=>[""], "date_created_tesim"=>[""], "date_created_ssi"=>"", "language_tesim"=>[""], "doi_ssim"=>[""], "member_of_paths_dpsim"=>["6d0a8efa-ec6e-4fb9-bd67-e7877376c5ca/7e5d0653-fcb0-45a1-bb9c-ec3b896afcba"], "embargo_end_date_tesim"=>[""], "embargo_end_date_ssi"=>"", "_version_"=>1574549301238956032, "timestamp"=>"2017-08-01T17:07:08.507Z", "score"=>2.5686157}
-    #    2.4.0 :004 > JupiterCore::ProxiedRemoteObject.reify_solr_doc(solr_doc)
+    #    2.4.0 :004 > JupiterCore::CachedRemoteObject.reify_solr_doc(solr_doc)
     #    => #<Work id: "88489b6e-12dd-4eea-b833-af08782c419e", visibility: "public", owner: "", title: "Test", subject: "", creator: "", contributor: "", description: "", publisher: "", date_created: "", language: "", doi: "", member_of_paths: ["6d0a8efa-ec6e-4fb9-bd67-e7877376c5ca/7e5d0653-fcb0-45a1-bb9c-ec3b896afcba"], embargo_end_date: "">
     #
     def self.reify_solr_doc(solr_doc)
-      raise ArgumentError, 'Not a valid ProxiedRemoteObject representation' unless solr_doc['has_model_ssim'].present?
+      raise ArgumentError, 'Not a valid CachedRemoteObject representation' unless solr_doc['has_model_ssim'].present?
       solr_doc['has_model_ssim'].first.constantize.owning_class.send(:new, solr_doc: solr_doc)
     end
 
@@ -280,7 +280,7 @@ module JupiterCore
       return super unless self.class.send(:derived_af_class).instance_methods.include?(name)
       raise LockedInstanceError, 'This is a locked cache instance and does not respond to the method you attempted '\
                                  "to call (##{name}). However, the locked instance DOES respond to ##{name}. Use "\
-                                 'unlock_and_load_remote_object to load a writable copy (SLOW).'
+                                 'unlock_cache_and_load_remote_object to load a writable copy (SLOW).'
     end
 
     # Looks pointless, but keeps rubocop happy because of the error-message refining +method_missing+ above
@@ -317,7 +317,7 @@ module JupiterCore
         child.solr_calc_attributes = solr_calc_attributes.present? ? solr_calc_attributes.dup : {}
         # child.derived_af_class
 
-        # If there's no class between +ProxiedRemoteObject+ and this child that's
+        # If there's no class between +CachedRemoteObject+ and this child that's
         # already had +visibility+ and +owner+ defined, define them.
         child.class_eval do
           unless attribute_names.include?(:visibility)
@@ -490,7 +490,7 @@ module JupiterCore
 
         define_method "#{name}=" do |*_args|
           raise LockedInstanceError, 'The Locked LDP object cannot be mutated outside of an unlocked block or without'\
-                                     'calling unlock_and_load_remote_object to load a writable copy (SLOW).'
+                                     'calling unlock_cache_and_load_remote_object to load a writable copy (SLOW).'
         end
 
         derived_af_class.class_eval do

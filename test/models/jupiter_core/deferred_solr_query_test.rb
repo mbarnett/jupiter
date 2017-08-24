@@ -2,7 +2,7 @@ require 'test_helper'
 
 class DeferredSolrQueryTest < ActiveSupport::TestCase
 
-  @@klass = Class.new(JupiterCore::ProxiedRemoteObject) do
+  @@klass = Class.new(JupiterCore::CachedRemoteObject) do
     remote_object_includes Hydra::Works::WorkBehavior
     has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :facet, :sort]
     has_attribute :creator, ::RDF::Vocab::DC.title, solrize_for: [:facet]
@@ -17,13 +17,13 @@ class DeferredSolrQueryTest < ActiveSupport::TestCase
     assert @@klass.limit(5).is_a?(JupiterCore::DeferredSolrQuery)
     assert @@klass.offset(5).is_a?(JupiterCore::DeferredSolrQuery)
 
-    obj = @@klass.new_proxied_remote_object(title: 'foo', owner: users(:regular_user).id,
-                                            visibility: JupiterCore::VISIBILITY_PUBLIC)
-    another_obj = @@klass.new_proxied_remote_object(title: 'zoo', owner: users(:regular_user).id,
-                                                    visibility: JupiterCore::VISIBILITY_PUBLIC)
+    obj = @@klass.new_cached_remote_object(title: 'foo', owner: users(:regular_user).id,
+                                           visibility: JupiterCore::VISIBILITY_PUBLIC)
+    another_obj = @@klass.new_cached_remote_object(title: 'zoo', owner: users(:regular_user).id,
+                                                   visibility: JupiterCore::VISIBILITY_PUBLIC)
 
-    obj.unlock_and_load_remote_object(&:save!)
-    another_obj.unlock_and_load_remote_object(&:save!)
+    obj.unlock_cache_and_load_remote_object(&:save!)
+    another_obj.unlock_cache_and_load_remote_object(&:save!)
 
     assert @@klass.all.present?
     assert_equal @@klass.all.total_count, 2

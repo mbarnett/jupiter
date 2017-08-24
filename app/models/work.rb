@@ -1,4 +1,4 @@
-class Work < JupiterCore::ProxiedRemoteObject
+class Work < JupiterCore::CachedRemoteObject
 
   remote_object_includes Hydra::Works::WorkBehavior
 

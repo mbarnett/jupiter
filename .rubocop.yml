@@ -78,7 +78,7 @@ Style/FileName:
 
 Style/RedundantSelf:
   Exclude:
-    - app/models/jupiter_core/proxied_remote_object.rb
+    - app/models/jupiter_core/cached_remote_object.rb
 
 # Checks if there is a magic comment to enforce string literals
 Style/FrozenStringLiteralComment:
@@ -107,14 +107,14 @@ Style/ClassVars:
 
 Style/PredicateName:
   Exclude:
-    - app/models/jupiter_core/proxied_remote_object.rb
+    - app/models/jupiter_core/cached_remote_object.rb
 
 Style/SingleLineMethods:
   Enabled: false
 
 Style/TrivialAccessors:
   Exclude:
-    - app/models/jupiter_core/proxied_remote_object.rb
+    - app/models/jupiter_core/cached_remote_object.rb
 
 Style/TrailingUnderscoreVariable:
   Enabled: false

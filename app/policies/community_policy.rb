@@ -1,4 +1,4 @@
-class CommunityPolicy < ProxiedRemoteObjectPolicy
+class CommunityPolicy < CachedRemoteObjectPolicy
 
   def index?
     true

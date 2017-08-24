@@ -1,4 +1,4 @@
-class WorkPolicy < ProxiedRemoteObjectPolicy
+class WorkPolicy < CachedRemoteObjectPolicy
 
   def index?
     true

@@ -1,4 +1,4 @@
-class Community < JupiterCore::ProxiedRemoteObject
+class Community < JupiterCore::CachedRemoteObject
 
   has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :facet]
 

@@ -1,5 +1,5 @@
-# Special policy for ProxiedRemoteObjects to inherit from
-class ProxiedRemoteObjectPolicy < ApplicationPolicy
+# Special policy for CachedRemoteObjects to inherit from
+class CachedRemoteObjectPolicy < ApplicationPolicy
 
   def permitted_attributes
     model_class.safe_attributes

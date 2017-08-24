@@ -1,4 +1,4 @@
-class CollectionPolicy < ProxiedRemoteObjectPolicy
+class CollectionPolicy < CachedRemoteObjectPolicy
 
   def index?
     true

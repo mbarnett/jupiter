@@ -20,33 +20,33 @@ if Rails.env.development?
   admin.identities.create(provider: 'developer', uid: 'admin@ualberta.ca')
 
   # seed work for admin user
-  Work.new_proxied_remote_object(
+  Work.new_cached_remote_object(
     owner: admin.id,
     visibility: JupiterCore::VISIBILITY_PUBLIC,
     title: 'Thesis about cats',
     date_created: Time.zone.now.to_s # will not be required in future, probably will have a created_at field
-  ).unlock_and_load_remote_object(&:save!)
+  ).unlock_cache_and_load_remote_object(&:save!)
 
-  Work.new_proxied_remote_object(
+  Work.new_cached_remote_object(
     owner: admin.id,
     visibility: JupiterCore::VISIBILITY_PUBLIC,
     title: 'Thesis about dogs',
     date_created: Time.zone.now.to_s
-  ).unlock_and_load_remote_object(&:save!)
+  ).unlock_cache_and_load_remote_object(&:save!)
 
-  Work.new_proxied_remote_object(
+  Work.new_cached_remote_object(
     owner: admin.id,
     visibility: JupiterCore::VISIBILITY_PUBLIC,
     title: 'Report about stock markets',
     date_created: Time.zone.now.to_s
-  ).unlock_and_load_remote_object(&:save!)
+  ).unlock_cache_and_load_remote_object(&:save!)
 
-  Work.new_proxied_remote_object(
+  Work.new_cached_remote_object(
     owner: admin.id,
     visibility: JupiterCore::VISIBILITY_PUBLIC,
     title: 'Random images',
     date_created: Time.zone.now.to_s
-  ).unlock_and_load_remote_object(&:save!)
+  ).unlock_cache_and_load_remote_object(&:save!)
 
   puts 'Database seeded successfully!'
 end

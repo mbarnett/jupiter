@@ -1,7 +1,7 @@
 class JupiterCore::Search
 
   # Performs a solr search using the given query and filtered query strings.
-  # Returns an instance of +SearchResult+ providing result counts, +ProxiedRemoteObject+ representing results, and
+  # Returns an instance of +SearchResult+ providing result counts, +CachedRemoteObject+ representing results, and
   # access to result facets.
   def self.search(q: '', fq: '', models: [], as: nil)
     raise ArgumentError, 'as: must specify a user!' if as.present? && !as.is_a?(User)
@@ -21,7 +21,7 @@ class JupiterCore::Search
                                                         restrict_to_model: models.map { |m| m.send(:derived_af_class) })
 
     JupiterCore::SearchResults.new(construct_facet_map(models), results_count, facets,
-                                   results.map { |res| JupiterCore::ProxiedRemoteObject.reify_solr_doc(res) })
+                                   results.map { |res| JupiterCore::CachedRemoteObject.reify_solr_doc(res) })
   end
 
   # derive additional restriction or broadening of the visibilitily query on top of the default

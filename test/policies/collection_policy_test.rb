@@ -5,7 +5,7 @@ class CollectionPolicyTest < ActiveSupport::TestCase
   context 'admin user' do
     should 'have proper authorization over collections' do
       current_user = users(:admin)
-      collection = Collection.new_proxied_remote_object
+      collection = Collection.new_cached_remote_object
 
       assert CollectionPolicy.new(current_user, collection).index?
       assert CollectionPolicy.new(current_user, collection).create?
@@ -20,7 +20,7 @@ class CollectionPolicyTest < ActiveSupport::TestCase
   context 'general user' do
     should 'only be able to see index and show of collections' do
       current_user = users(:regular_user)
-      collection = Collection.new_proxied_remote_object
+      collection = Collection.new_cached_remote_object
 
       assert CollectionPolicy.new(current_user, collection).index?
       assert CollectionPolicy.new(current_user, collection).show?
@@ -36,7 +36,7 @@ class CollectionPolicyTest < ActiveSupport::TestCase
   context 'anon user' do
     should 'only be able to see index and show of collections' do
       current_user = nil
-      collection = Collection.new_proxied_remote_object
+      collection = Collection.new_cached_remote_object
 
       assert CollectionPolicy.new(current_user, collection).index?
       assert CollectionPolicy.new(current_user, collection).show?

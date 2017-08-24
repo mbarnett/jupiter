@@ -4,9 +4,9 @@ class CommunitiesControllerTest < ActionDispatch::IntegrationTest
 
   def before_all
     super
-    @community = Community.new_proxied_remote_object(title: 'Nice community',
-                                                     owner: 1)
-    @community.unlock_and_load_remote_object(&:save!)
+    @community = Community.new_cached_remote_object(title: 'Nice community',
+                                                    owner: 1)
+    @community.unlock_cache_and_load_remote_object(&:save!)
   end
 
   def setup
@@ -47,8 +47,8 @@ class CommunitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should destroy community' do
-    community = Community.new_proxied_remote_object(title: 'Delete me',
-                                                    owner: users(:admin).id).unlock_and_load_remote_object(&:save!)
+    community = Community.new_cached_remote_object(title: 'Delete me',
+                                                   owner: users(:admin).id).unlock_cache_and_load_remote_object(&:save!)
     assert_difference('Community.count', -1) do
       delete community_url(community)
     end
