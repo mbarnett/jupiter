@@ -29,7 +29,7 @@ class Work < JupiterCore::CachedRemoteObject
     super + [VISIBILITY_EMBARGO]
   end
 
-  unlocked do
+  when_mutating_remote_object do
     validates :embargo_end_date, presence: true, if: ->(work) { work.visibility == VISIBILITY_EMBARGO }
     validates :embargo_end_date, absence: true, if: ->(work) { work.visibility != VISIBILITY_EMBARGO }
 

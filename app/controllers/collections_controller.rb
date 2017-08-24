@@ -19,7 +19,7 @@ class CollectionsController < ApplicationController
       Collection.new_cached_remote_object(permitted_attributes(Collection)
                                         .merge(owner: current_user&.id))
     authorize @collection
-    @collection.unlock_cache_and_load_remote_object(&:save!)
+    @collection.flush_cache_and_mutate_remote(&:save!)
 
     @community = Community.find(params[:community_id])
     redirect_to community_collection_path(@community, @collection)
@@ -35,7 +35,7 @@ class CollectionsController < ApplicationController
   def update
     @collection = Collection.find(params[:id])
     authorize @collection
-    @collection.unlock_cache_and_load_remote_object do |unlocked_collection|
+    @collection.flush_cache_and_mutate_remote do |unlocked_collection|
       unlocked_collection.update!(permitted_attributes(Collection))
     end
     flash[:notice] = I18n.t('application.collections.updated')
@@ -45,7 +45,7 @@ class CollectionsController < ApplicationController
   def destroy
     collection = Collection.find(params[:id])
     authorize collection
-    collection.unlock_cache_and_load_remote_object do |uo|
+    collection.flush_cache_and_mutate_remote do |uo|
       if uo.destroy
         flash[:notice] = I18n.t('application.collections.deleted')
       else

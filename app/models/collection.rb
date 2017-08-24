@@ -23,7 +23,7 @@ class Collection < JupiterCore::CachedRemoteObject
     super(only: [:title, :id])
   end
 
-  unlocked do
+  when_mutating_remote_object do
     before_destroy :can_be_destroyed?
 
     before_validation do

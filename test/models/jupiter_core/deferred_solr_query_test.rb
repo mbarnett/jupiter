@@ -22,8 +22,8 @@ class DeferredSolrQueryTest < ActiveSupport::TestCase
     another_obj = @@klass.new_cached_remote_object(title: 'zoo', owner: users(:regular_user).id,
                                                    visibility: JupiterCore::VISIBILITY_PUBLIC)
 
-    obj.unlock_cache_and_load_remote_object(&:save!)
-    another_obj.unlock_cache_and_load_remote_object(&:save!)
+    obj.flush_cache_and_mutate_remote(&:save!)
+    another_obj.flush_cache_and_mutate_remote(&:save!)
 
     assert @@klass.all.present?
     assert_equal @@klass.all.total_count, 2
