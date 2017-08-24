@@ -15,7 +15,7 @@ class WorksController < ApplicationController
     authorize @work
 
     # TODO: add validations?
-    @work.flush_cache_and_mutate_remote do |unlocked_work|
+    @work.flush_cache_and_perform_remote_write do |unlocked_work|
       communities.each_with_index do |community, idx|
         # TODO: raises undefined method `[]' for nil:NilClass on empty form
         unlocked_work.add_to_path(community, collections[idx])
@@ -38,7 +38,7 @@ class WorksController < ApplicationController
 
   def update
     authorize @work
-    @work.flush_cache_and_mutate_remote do |unlocked_work|
+    @work.flush_cache_and_perform_remote_write do |unlocked_work|
       unlocked_work.update!(permitted_attributes(@work))
     end
     redirect_to @work

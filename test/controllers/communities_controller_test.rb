@@ -6,7 +6,7 @@ class CommunitiesControllerTest < ActionDispatch::IntegrationTest
     super
     @community = Community.new_cached_remote_object(title: 'Nice community',
                                                     owner: 1)
-    @community.flush_cache_and_mutate_remote(&:save!)
+    @community.flush_cache_and_perform_remote_write(&:save!)
   end
 
   def setup
@@ -47,8 +47,9 @@ class CommunitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should destroy community' do
+    admin = users(:admin).id
     community = Community.new_cached_remote_object(title: 'Delete me',
-                                                   owner: users(:admin).id).flush_cache_and_mutate_remote(&:save!)
+                                                   owner: admin).flush_cache_and_perform_remote_write(&:save!)
     assert_difference('Community.count', -1) do
       delete community_url(community)
     end

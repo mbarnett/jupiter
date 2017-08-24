@@ -52,11 +52,11 @@ module JupiterCore
     #
     # yields the underlying mutable +ActiveFedora+ object to the block and returns self for chaining
     #
-    #  locked_obj.flush_cache_and_mutate_remote do |object|
+    #  locked_obj.flush_cache_and_perform_remote_write do |object|
     #    object.title = 'asdf'
     #    object.save
     #  end
-    def flush_cache_and_mutate_remote
+    def flush_cache_and_perform_remote_write
       self.remote_object = self.class.send(:derived_af_class).find(id) unless @remote_object.present?
       yield @remote_object
       self
@@ -280,7 +280,7 @@ module JupiterCore
       return super unless self.class.send(:derived_af_class).instance_methods.include?(name)
       raise LockedInstanceError, 'This is a locked cache instance and does not respond to the method you attempted '\
                                  "to call (##{name}). However, the locked instance DOES respond to ##{name}. Use "\
-                                 'flush_cache_and_mutate_remote to load a writable copy (SLOW).'
+                                 'flush_cache_and_perform_remote_write to load a writable copy (SLOW).'
     end
 
     # Looks pointless, but keeps rubocop happy because of the error-message refining +method_missing+ above
@@ -342,7 +342,7 @@ module JupiterCore
         "AnonymousDerivedClass#{object_id}"
       end
 
-      def when_mutating_remote_object(&block)
+      def when_writable(&block)
         derived_af_class.class_eval(&block)
       end
 
@@ -490,7 +490,7 @@ module JupiterCore
 
         define_method "#{name}=" do |*_args|
           raise LockedInstanceError, 'The Locked LDP object cannot be mutated outside of an unlocked block or without'\
-                                     'calling flush_cache_and_mutate_remote to load a writable copy (SLOW).'
+                                     'calling flush_cache_and_perform_remote_write to load a writable copy (SLOW).'
         end
 
         derived_af_class.class_eval do

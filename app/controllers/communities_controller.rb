@@ -31,7 +31,7 @@ class CommunitiesController < ApplicationController
       Community.new_cached_remote_object(permitted_attributes(Community)
                                        .merge(owner: current_user&.id))
     authorize @community
-    @community.flush_cache_and_mutate_remote(&:save!)
+    @community.flush_cache_and_perform_remote_write(&:save!)
 
     redirect_to @community
   end
@@ -39,7 +39,7 @@ class CommunitiesController < ApplicationController
   def update
     @community = Community.find(params[:id])
     authorize @community
-    @community.flush_cache_and_mutate_remote do |unlocked_community|
+    @community.flush_cache_and_perform_remote_write do |unlocked_community|
       unlocked_community.update!(permitted_attributes(Community))
     end
     flash[:notice] = I18n.t('application.communities.updated')
@@ -49,7 +49,7 @@ class CommunitiesController < ApplicationController
   def destroy
     community = Community.find(params[:id])
     authorize community
-    community.flush_cache_and_mutate_remote do |uo|
+    community.flush_cache_and_perform_remote_write do |uo|
       if uo.destroy
         flash[:notice] = I18n.t('application.communities.deleted')
       else

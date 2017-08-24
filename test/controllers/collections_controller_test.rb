@@ -6,11 +6,11 @@ class CollectionsControllerTest < ActionDispatch::IntegrationTest
     super
     @community = Community.new_cached_remote_object(title: 'Nice community',
                                                     owner: 1)
-    @community.flush_cache_and_mutate_remote(&:save!)
+    @community.flush_cache_and_perform_remote_write(&:save!)
     @collection = Collection.new_cached_remote_object(community_id: @community.id,
                                                       title: 'Nice collection',
                                                       owner: 1)
-    @collection.flush_cache_and_mutate_remote(&:save!)
+    @collection.flush_cache_and_perform_remote_write(&:save!)
   end
 
   def setup
@@ -53,10 +53,10 @@ class CollectionsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should destroy collection' do
     community = Community.new_cached_remote_object(title: 'Nice community',
-                                                   owner: 1).flush_cache_and_mutate_remote(&:save!)
+                                                   owner: 1).flush_cache_and_perform_remote_write(&:save!)
     collection = Collection.new_cached_remote_object(community_id: @community.id,
                                                      title: 'Nice collection',
-                                                     owner: 1).flush_cache_and_mutate_remote(&:save!)
+                                                     owner: 1).flush_cache_and_perform_remote_write(&:save!)
     assert_difference('Collection.count', -1) do
       delete community_collection_url(community, collection)
     end

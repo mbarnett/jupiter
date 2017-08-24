@@ -16,7 +16,7 @@ class SearchTest < ActiveSupport::TestCase
       "Title is: #{title}"
     end
 
-    when_mutating_remote_object do
+    when_writable do
       def unlocked_method_can_mutate(attempted_title)
         self.title = attempted_title
       end
@@ -39,9 +39,9 @@ class SearchTest < ActiveSupport::TestCase
     a_private_object = @@klass.new_cached_remote_object(title: generate_random_string, creator: generate_random_string,
                                                         visibility: 'private', owner: users(:regular_user).id)
 
-    obj.flush_cache_and_mutate_remote(&:save!)
-    another_obj.flush_cache_and_mutate_remote(&:save!)
-    a_private_object.flush_cache_and_mutate_remote(&:save!)
+    obj.flush_cache_and_perform_remote_write(&:save!)
+    another_obj.flush_cache_and_perform_remote_write(&:save!)
+    a_private_object.flush_cache_and_perform_remote_write(&:save!)
 
     search_results = JupiterCore::Search.search(models: @@klass, q: '')
 

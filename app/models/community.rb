@@ -7,7 +7,7 @@ class Community < JupiterCore::CachedRemoteObject
     Collection.where(community_id: id)
   end
 
-  when_mutating_remote_object do
+  when_writable do
     before_destroy :can_be_destroyed?
 
     before_validation do

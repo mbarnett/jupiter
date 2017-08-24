@@ -18,7 +18,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
       "Title is: #{title}"
     end
 
-    when_mutating_remote_object do
+    when_writable do
       before_validation :before_validation_method
       after_validation :after_validation_method
 
@@ -77,7 +77,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
     title = generate_random_string
     obj = @@klass.new_cached_remote_object(title: title)
 
-    obj.flush_cache_and_mutate_remote do |uo|
+    obj.flush_cache_and_perform_remote_write do |uo|
       solr_doc = uo.to_solr
 
       assert solr_doc.key? 'my_solr_doc_attr_tesim'
@@ -115,7 +115,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
     end
 
     assert_raises JupiterCore::LockedInstanceError do
-      obj.flush_cache_and_mutate_remote do |uo|
+      obj.flush_cache_and_perform_remote_write do |uo|
         uo.unlocked_method_dont_let_locked_methods_mutate(generate_random_string)
       end
     end
@@ -127,7 +127,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
     title = generate_random_string
     obj = @@klass.new_cached_remote_object(title: title)
 
-    obj.flush_cache_and_mutate_remote do |uo|
+    obj.flush_cache_and_perform_remote_write do |uo|
       assert_equal "Title is: #{title}", uo.safe_locked_method
     end
   end
@@ -138,7 +138,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
 
     new_title = generate_random_string
 
-    obj.flush_cache_and_mutate_remote do |unlocked_object|
+    obj.flush_cache_and_perform_remote_write do |unlocked_object|
       assert_equal orig_title, unlocked_object.title
       unlocked_object.title = new_title
     end
@@ -147,7 +147,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
 
     another_new_title = generate_random_string
 
-    obj.flush_cache_and_mutate_remote do |unlocked_object|
+    obj.flush_cache_and_perform_remote_write do |unlocked_object|
       unlocked_object.unlocked_method_can_mutate(another_new_title)
     end
 
@@ -194,7 +194,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
     assert_not_predicate obj, :changed?
     assert_not_predicate obj, :valid?
 
-    obj.flush_cache_and_mutate_remote do |uo|
+    obj.flush_cache_and_perform_remote_write do |uo|
       uo.title = 'Title'
       uo.visibility = JupiterCore::VISIBILITY_PUBLIC
       uo.owner = users(:regular_user).id
@@ -216,7 +216,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
     assert obj.record_created_at.nil?
 
     freeze_time do
-      obj.flush_cache_and_mutate_remote(&:save!)
+      obj.flush_cache_and_perform_remote_write(&:save!)
       assert obj.id.present?
       assert obj.record_created_at.present?
       assert_equal obj.record_created_at, Time.current
@@ -230,7 +230,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
 
     another_obj = @@klass.new_cached_remote_object(title: second_title, creator: creator,
                                                    owner: users(:regular_user).id, visibility: 'public')
-    another_obj.flush_cache_and_mutate_remote(&:save!)
+    another_obj.flush_cache_and_perform_remote_write(&:save!)
 
     assert @@klass.all.count == 2
 
@@ -253,7 +253,7 @@ class CachedRemoteObjectTest < ActiveSupport::TestCase
   test 'Validation callbacks actually, yknow, run. Seriously. I have to test for this.' do
     obj = @@klass.new_cached_remote_object(title: generate_random_string)
 
-    obj.flush_cache_and_mutate_remote do |uo|
+    obj.flush_cache_and_perform_remote_write do |uo|
       before_mock = MiniTest::Mock.new
       before_mock.expect :call, true
 

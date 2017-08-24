@@ -11,7 +11,7 @@ class WorkTest < ActiveSupport::TestCase
   test 'unknown visibilities are not valid' do
     work = Work.new_cached_remote_object
 
-    work.flush_cache_and_mutate_remote do |unlocked_work|
+    work.flush_cache_and_perform_remote_write do |unlocked_work|
       unlocked_work.visibility = :some_fake_visibility
     end
 
@@ -26,7 +26,7 @@ class WorkTest < ActiveSupport::TestCase
 
   test 'embargo_end_date must be present if visibility is embargo' do
     work = Work.new_cached_remote_object
-    work.flush_cache_and_mutate_remote do |unlocked_work|
+    work.flush_cache_and_perform_remote_write do |unlocked_work|
       unlocked_work.visibility = Work::VISIBILITY_EMBARGO
     end
 
@@ -37,7 +37,7 @@ class WorkTest < ActiveSupport::TestCase
 
   test 'embargo_end_date must be blank for non-embargo visibilities' do
     work = Work.new_cached_remote_object
-    work.flush_cache_and_mutate_remote do |unlocked_work|
+    work.flush_cache_and_perform_remote_write do |unlocked_work|
       unlocked_work.visibility = JupiterCore::VISIBILITY_PUBLIC
       unlocked_work.embargo_end_date = '1992-02-01'
     end
@@ -54,7 +54,7 @@ class WorkTest < ActiveSupport::TestCase
     community_id = generate_random_string
     collection_id = generate_random_string
 
-    work.flush_cache_and_mutate_remote do |unlocked_work|
+    work.flush_cache_and_perform_remote_write do |unlocked_work|
       unlocked_work.add_to_path(community_id, collection_id)
     end
 
