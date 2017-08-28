@@ -30,6 +30,11 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    aasm (4.12.2)
+      concurrent-ruby (~> 1.0)
+    aasm-active_fedora (0.2.0.pre)
+      aasm (~> 4.11)
+      active-fedora
     actioncable (5.1.2)
       actionpack (= 5.1.2)
       nio4r (~> 2.0)
@@ -113,6 +118,8 @@ GEM
       sxp (~> 1.0)
     erubi (1.6.1)
     execjs (2.7.0)
+    ezid-client (1.7.1)
+      hashie (~> 3.4, >= 3.4.3)
     faraday (0.12.1)
       multipart-post (>= 1.2, < 3)
     faraday-encoding (0.0.4)
@@ -351,11 +358,14 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aasm
+  aasm-active_fedora (>= 0.2.0.pre)
   active-fedora!
   better_errors (>= 2.3.0)
   binding_of_caller
   bootstrap (~> 4.0.0.beta)
   capybara (~> 2.13)
+  ezid-client
   font-awesome-rails
   haikunator
   haml

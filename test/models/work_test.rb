@@ -65,4 +65,12 @@ class WorkTest < ActiveSupport::TestCase
     assert_not_includes Work.display_attribute_names, :member_of_paths
   end
 
+  test 'DOI assignment' do
+    work = Work.new_locked_ldp_object(title: generate_random_string, owner: users(:regular_user).id,
+                                      visibility: JupiterCore::VISIBILITY_PUBLIC)
+
+    work.unlock_and_fetch_ldp_object(&:save)
+    binding.pry
+  end
+
 end

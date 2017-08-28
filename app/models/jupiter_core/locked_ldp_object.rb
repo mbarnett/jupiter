@@ -42,6 +42,8 @@ module JupiterCore
     class_attribute :af_parent_class, :attribute_cache, :attribute_names, :facets,
                     :reverse_solr_name_cache, :solr_calc_attributes
 
+    attr_accessor :visibility_lifecycle_previous_state
+
     # Returns the id of the object in LDP as a String
     def id
       return ldp_object.send(:id) if ldp_object.present?
@@ -252,6 +254,18 @@ module JupiterCore
       visibility == VISIBILITY_AUTHENTICATED
     end
 
+    def previous_visibility
+      return @visibility_lifecycle_previous_state
+    end
+
+    def transitioned_from_private?
+      return previous_visibility == VISIBILITY_PRIVATE && visibility != VISIBILITY_PRIVATE
+    end
+
+    def transitioned_to_private?
+      return previous_visibility != VISIBILITY_PRIVATE && visibility == VISIBILITY_PRIVATE
+    end
+
     # Used to dynamically turn an arbitrary Solr document into an instance of its originating class
     #
     # eg)
@@ -390,6 +404,12 @@ module JupiterCore
 
           def self.owning_class
             @owning_class
+          end
+
+          # hook back into lifecycle of visibility to implement detection of items becoming private, for DOI lifecycle
+          def visibility_will_change!
+            owning_object.visibility_lifecycle_previous_state = visibility
+            super
           end
 
           # a single common indexer for all subclasses which leverages stored property metadata to DRY up indexing

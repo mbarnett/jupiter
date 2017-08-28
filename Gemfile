@@ -32,6 +32,11 @@ gem 'mysql2', '>= 0.3.18', '< 0.5'
 gem 'redis', '~> 3.0'
 gem 'rsolr'
 
+# DOI issuing
+gem 'aasm'
+gem 'aasm-active_fedora', '>= 0.2.0.pre'
+gem 'ezid-client'
+
 # Authentication
 gem 'omniauth'
 gem 'omniauth-saml'
