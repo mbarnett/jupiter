@@ -501,17 +501,17 @@ en:
       review: Review
       learning_object: 'Learning Object'
     language:
-      ukr: Ukrainian
-      jpn: Japanese
-      ger: German
+      ukrainian: Ukrainian
+      japanese: Japanese
+      german: German
       other: 'Other language'
-      ita: Italian
-      rus: Russian
-      zxx: 'No linguistic content'
-      eng: English
-      fre: French
-      zho: Chinese
-      spa: Spanish
+      italian: Italian
+      russian: Russian
+      no_linguistic_content: 'No linguistic content'
+      english: English
+      french: French
+      chinese: Chinese
+      spanish: Spanish
     license:
       attribution_4_0_international: 'Attribution 4.0 International'
       attribution_sharealike_4_0_international: 'Attribution-ShareAlike 4.0 International'

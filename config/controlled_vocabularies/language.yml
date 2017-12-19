@@ -1,25 +1,12 @@
----
-# Note: order is roughly based on probability of usage
 language:
-  - code: eng
-    uri: http://id.loc.gov/vocabulary/iso639-2/eng
-  - code: fre
-    uri: http://id.loc.gov/vocabulary/iso639-2/fre
-  - code: other
-    uri: http://terms.library.ualberta.ca/other
-  - code: ukr
-    uri: http://id.loc.gov/vocabulary/iso639-2/ukr
-  - code: ger
-    uri: http://id.loc.gov/vocabulary/iso639-2/ger
-  - code: jpn
-    uri: http://id.loc.gov/vocabulary/iso639-2/jpn
-  - code: ita
-    uri: http://id.loc.gov/vocabulary/iso639-2/ita
-  - code: rus
-    uri: http://id.loc.gov/vocabulary/iso639-2/rus
-  - code: zxx
-    uri: http://id.loc.gov/vocabulary/iso639-2/zxx
-  - code: zho
-    uri: http://id.loc.gov/vocabulary/iso639-2/zho
-  - code: spa
-    uri: http://id.loc.gov/vocabulary/iso639-2/spa
+  english: http://id.loc.gov/vocabulary/iso639-2/eng
+  french: http://id.loc.gov/vocabulary/iso639-2/fre
+  other: http://terms.library.ualberta.ca/other
+  ukrainian: http://id.loc.gov/vocabulary/iso639-2/ukr
+  german: http://id.loc.gov/vocabulary/iso639-2/ger
+  japanese: http://id.loc.gov/vocabulary/iso639-2/jpn
+  italian: http://id.loc.gov/vocabulary/iso639-2/ita
+  russian: http://id.loc.gov/vocabulary/iso639-2/rus
+  no_linguistic_content: http://id.loc.gov/vocabulary/iso639-2/zxx
+  chinese: http://id.loc.gov/vocabulary/iso639-2/zho
+  spanish: http://id.loc.gov/vocabulary/iso639-2/spa

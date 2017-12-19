@@ -36,7 +36,7 @@ class FileSetTest < ActiveSupport::TestCase
                                       visibility: JupiterCore::VISIBILITY_PUBLIC,
                                       owner: 1,
                                       item_type: CONTROLLED_VOCABULARIES[:item_type].report,
-                                      languages: [CONTROLLED_VOCABULARIES[:language].eng],
+                                      languages: [CONTROLLED_VOCABULARIES[:language].english],
                                       license: CONTROLLED_VOCABULARIES[:license].attribution_4_0_international)
 
     item.unlock_and_fetch_ldp_object do |unlocked_item|

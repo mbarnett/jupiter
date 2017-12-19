@@ -1,18 +1,9 @@
----
 license:
-  - code: attribution_4_0_international
-    uri: http://creativecommons.org/licenses/by/4.0/
-  - code: attribution_sharealike_4_0_international
-    uri: http://creativecommons.org/licenses/by-sa/4.0/
-  - code: attribution_noncommercial_4_0_international
-    uri: http://creativecommons.org/licenses/by-nc/4.0/
-  - code: attribution_noncommercial_noderivatives_4_0_international
-    uri: http://creativecommons.org/licenses/by-nc-nd/4.0/
-  - code: cc0_1_0_universal
-    uri: http://creativecommons.org/publicdomain/zero/1.0/
-  - code: attribution_noderivatives_4_0_international
-    uri: http://creativecommons.org/licenses/by-nd/4.0/
-  - code: public_domain_mark_1_0
-    uri: http://creativecommons.org/publicdomain/mark/1.0/
-  - code: attribution_noncommercial_sharealike_4_0_international
-    uri: http://creativecommons.org/licenses/by-nc-sa/4.0/
+  attribution_4_0_international: http://creativecommons.org/licenses/by/4.0/
+  attribution_sharealike_4_0_international: http://creativecommons.org/licenses/by-sa/4.0/
+  attribution_noncommercial_4_0_international: http://creativecommons.org/licenses/by-nc/4.0/
+  attribution_noncommercial_noderivatives_4_0_international: http://creativecommons.org/licenses/by-nc-nd/4.0/
+  cc0_1_0_universal: http://creativecommons.org/publicdomain/zero/1.0/
+  attribution_noderivatives_4_0_international: http://creativecommons.org/licenses/by-nd/4.0/
+  public_domain_mark_1_0: http://creativecommons.org/publicdomain/mark/1.0/
+  attribution_noncommercial_sharealike_4_0_international: http://creativecommons.org/licenses/by-nc-sa/4.0/

@@ -1,12 +1,6 @@
----
 visibility:
-  - code: authenticated
-    uri: http://terms.library.ualberta.ca/authenticated
-  - code: draft
-    uri: http://terms.library.ualberta.ca/draft
-  - code: embargo
-    uri: http://terms.library.ualberta.ca/embargo
-  - code: private
-    uri: http://terms.library.ualberta.ca/private
-  - code: public
-    uri: http://terms.library.ualberta.ca/public
+  authenticated: http://terms.library.ualberta.ca/authenticated
+  draft: http://terms.library.ualberta.ca/draft
+  embargo: http://terms.library.ualberta.ca/embargo
+  private: http://terms.library.ualberta.ca/private
+  public: http://terms.library.ualberta.ca/public

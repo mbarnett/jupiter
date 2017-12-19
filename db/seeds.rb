@@ -106,11 +106,11 @@ if Rails.env.development? || Rails.env.uat?
                       end
         # Probabilistically about 70% English, 20% French, 10% Ukrainian
         language = if seed % 10 > 2
-                     CONTROLLED_VOCABULARIES[:language].eng
+                     CONTROLLED_VOCABULARIES[:language].english
                    elsif seed % 10 > 0
-                     CONTROLLED_VOCABULARIES[:language].fre
+                     CONTROLLED_VOCABULARIES[:language].french
                    else
-                     CONTROLLED_VOCABULARIES[:language].ukr
+                     CONTROLLED_VOCABULARIES[:language].ukrainian
                    end
         licence_right = {}
         attributes = {
@@ -148,7 +148,7 @@ if Rails.env.development? || Rails.env.uat?
         visibility: JupiterCore::VISIBILITY_PRIVATE,
         title: "Private #{thing.pluralize}, public lives: a survey of social media trends",
         description: Faker::Lorem.sentence(20, false, 0).chop,
-        languages: [CONTROLLED_VOCABULARIES[:language].eng],
+        languages: [CONTROLLED_VOCABULARIES[:language].english],
         license: CONTROLLED_VOCABULARIES[:license].attribution_4_0_international,
         item_type: CONTROLLED_VOCABULARIES[:item_type].chapter
       ).unlock_and_fetch_ldp_object do |uo|
@@ -162,7 +162,7 @@ if Rails.env.development? || Rails.env.uat?
         visibility: Item::VISIBILITY_EMBARGO,
         title: "Embargo and #{Faker::Address.country}: were the #{thing.pluralize} left behind?",
         description: Faker::Lorem.sentence(20, false, 0).chop,
-        languages: [CONTROLLED_VOCABULARIES[:language].eng],
+        languages: [CONTROLLED_VOCABULARIES[:language].english],
         license: CONTROLLED_VOCABULARIES[:license].attribution_4_0_international,
         item_type: CONTROLLED_VOCABULARIES[:item_type].conference_paper
       ).unlock_and_fetch_ldp_object do |uo|
@@ -178,7 +178,7 @@ if Rails.env.development? || Rails.env.uat?
         visibility: Item::VISIBILITY_EMBARGO,
         title: "Former embargo of #{Faker::Address.country}: the day the #{thing.pluralize} were free",
         description: Faker::Lorem.sentence(20, false, 0).chop,
-        languages: [CONTROLLED_VOCABULARIES[:language].eng],
+        languages: [CONTROLLED_VOCABULARIES[:language].english],
         license: CONTROLLED_VOCABULARIES[:license].attribution_4_0_international,
         item_type: CONTROLLED_VOCABULARIES[:item_type].dataset
       ).unlock_and_fetch_ldp_object do |uo|
@@ -194,7 +194,7 @@ if Rails.env.development? || Rails.env.uat?
         visibility: JupiterCore::VISIBILITY_PUBLIC,
         title: "Impact of non-admin users on #{thing.pluralize}",
         description: Faker::Lorem.sentence(20, false, 0).chop,
-        languages: [CONTROLLED_VOCABULARIES[:language].eng],
+        languages: [CONTROLLED_VOCABULARIES[:language].english],
         license: CONTROLLED_VOCABULARIES[:license].attribution_4_0_international,
         item_type: CONTROLLED_VOCABULARIES[:item_type].learning_object
       ).unlock_and_fetch_ldp_object do |uo|
@@ -211,7 +211,7 @@ if Rails.env.development? || Rails.env.uat?
       title: "Multi-collection random images of #{thing.pluralize}",
       description: Faker::Lorem.sentence(20, false, 0).chop,
       # No linguistic content
-      languages: [CONTROLLED_VOCABULARIES[:language].zxx],
+      languages: [CONTROLLED_VOCABULARIES[:language].no_linguistic_content],
       license: CONTROLLED_VOCABULARIES[:license].attribution_4_0_international,
       item_type: CONTROLLED_VOCABULARIES[:item_type].image
     ).unlock_and_fetch_ldp_object do |uo|
@@ -246,6 +246,20 @@ if Rails.env.development? || Rails.env.uat?
     ).unlock_and_fetch_ldp_object(&:save!)
   end
 
+  # One community/collection for Drafts
+  community = Community.new_locked_ldp_object(
+    owner: admin.id,
+    title: "The University of #{Faker::Lovecraft.location}",
+    description: Faker::Lovecraft.sentence(20)
+  ).unlock_and_fetch_ldp_object(&:save!)
+
+  collection = Collection.new_locked_ldp_object(
+    owner: admin.id,
+    title: "The Department of #{Faker::Lovecraft.words(3)}",
+    community_id: community.id,
+    description: Faker::Lovecraft.sentence(20)
+  ).unlock_and_fetch_ldp_object(&:save!)
+
   # Types
   [:book, :book_chapter, :conference_workshop_poster,
    :conference_workshop_presenation, :dataset,
@@ -259,6 +273,19 @@ if Rails.env.development? || Rails.env.uat?
    :italian, :russian, :ukrainian, :japanese,
    :no_linguistic_content, :other].each do |language_name|
     Language.create(name: language_name)
+  end
+
+  # Drafts & Eldritch Manuscripts
+  10.times do
+    DraftItem.create(title: Faker::Lovecraft.tome,
+                     user: non_admin,
+                     license: 'attribution_noncommercial_4_0_international',
+                     creators: [Faker::Lovecraft.deity, Faker::Lovecraft.deity],
+                     subjects: [Faker::Lovecraft.sentence],
+                     languages: [Language.find_by(name: :english)],
+                     type: Type.find_by(name: :book),
+                     member_of_paths: ["#{community.id}/#{collection.id}"]
+                      )
   end
 
   puts 'Database seeded successfully!'

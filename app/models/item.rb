@@ -9,7 +9,6 @@ class Item < JupiterCore::LockedLdpObject
                                 CONTROLLED_VOCABULARIES[:visibility].draft,
                                 CONTROLLED_VOCABULARIES[:visibility].public].freeze
 
-  # Dublin Core attributes
   has_attribute :title, ::RDF::Vocab::DC.title, solrize_for: [:search, :sort]
   has_multival_attribute :creators, ::RDF::Vocab::DC.creator, solrize_for: [:search, :facet]
   has_multival_attribute :contributors, ::RDF::Vocab::DC.contributor, solrize_for: [:search, :facet]
@@ -18,16 +17,15 @@ class Item < JupiterCore::LockedLdpObject
   has_multival_attribute :subject, ::RDF::Vocab::DC.subject, solrize_for: [:search, :facet]
   has_attribute :description, ::RDF::Vocab::DC.description, type: :text, solrize_for: :search
   has_attribute :publisher, ::RDF::Vocab::DC.publisher, solrize_for: [:search, :facet]
-  # has_attribute :date_modified, ::RDF::Vocab::DC.modified, type: :date, solrize_for: :sort
   has_multival_attribute :languages, ::RDF::Vocab::DC.language, solrize_for: [:search, :facet]
   has_attribute :embargo_end_date, ::RDF::Vocab::DC.available, type: :date, solrize_for: [:sort]
   has_attribute :license, ::RDF::Vocab::DC.license, solrize_for: [:search]
   has_attribute :rights, ::RDF::Vocab::DC.rights, solrize_for: :exact_match
+
   # `type` is an ActiveFedora keyword, so we call it `item_type`
   # Note also the `item_type_with_status` below for searching, faceting and forms
   has_attribute :item_type, ::RDF::Vocab::DC.type, solrize_for: :exact_match
 
-  # UAL attributes
   has_attribute :depositor, ::TERMS[:ual].depositor, solrize_for: [:search]
   has_attribute :fedora3_handle, ::TERMS[:ual].fedora3handle, solrize_for: :exact_match
   has_attribute :fedora3_uuid, ::TERMS[:ual].fedora3uuid, solrize_for: :exact_match
@@ -36,17 +34,13 @@ class Item < JupiterCore::LockedLdpObject
                          type: :path,
                          solrize_for: :pathing
 
-  # Prism attributes
   has_attribute :doi, ::TERMS[:prism].doi, solrize_for: :exact_match
 
-  # Bibo attributes
   has_attribute :publication_status, ::TERMS[:bibo].status, solrize_for: :exact_match
 
-  # Project Hydra ACL attributes
   has_multival_attribute :embargo_history, ::TERMS[:acl].embargoHistory, solrize_for: :exact_match
   has_attribute :visibility_after_embargo, ::TERMS[:acl].visibilityAfterEmbargo, solrize_for: :exact_match
 
-  # Solr only
   additional_search_index :doi_without_label, solrize_for: :exact_match,
                                               as: -> { doi.gsub('doi:', '') if doi.present? }
 
@@ -64,14 +58,12 @@ class Item < JupiterCore::LockedLdpObject
     super + [VISIBILITY_EMBARGO]
   end
 
-  # This is stored in solr: combination of item_type and publication_status
   def item_type_with_status_code
     return nil if item_type.blank?
-    # Return the item type code unless it's an article, then append publication status code
-    item_type_code = CONTROLLED_VOCABULARIES[:item_type].uri_to_code(item_type)
+    item_type_code = CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
     return item_type_code unless item_type_code == 'article'
     return nil if publication_status.blank?
-    publication_status_code = CONTROLLED_VOCABULARIES[:publication_status].uri_to_code(publication_status)
+    publication_status_code = CONTROLLED_VOCABULARIES[:publication_status].from_uri(publication_status)
     "#{item_type_code}_#{publication_status_code}"
   rescue ArgumentError
     return nil
@@ -93,20 +85,43 @@ class Item < JupiterCore::LockedLdpObject
     nil
   end
 
+  def self.from_draft(draft_item)
+    attrs = draft_item.attributes.symbolize_keys
+    attrs.delete(:id)
+    attrs[:visibility] = CONTROLLED_VOCABULARIES[:visibility].public if attrs[:visibility] == 'open_access'
+    attrs[:visibility_after_embargo] = nil if attrs[:embargo_end_date] == nil
+    attrs[:owner] = attrs[:user_id]
+
+    attrs[:languages] = []
+    draft_item.languages.each do |lang|
+      attrs[:languages] << ::CONTROLLED_VOCABULARIES[:language].send(lang.name)
+    end
+
+    attrs[:item_type] = ::CONTROLLED_VOCABULARIES[:item_type].send(draft_item.type.name)
+    attrs[:license] = ::CONTROLLED_VOCABULARIES[:license].send(draft_item.license)
+
+    attrs.keep_if { |k, _| attribute_names.include?(k) }
+
+    new_locked_ldp_object(attrs)
+  end
+
   unlocked do
-    validates :embargo_end_date, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
     validates :embargo_end_date, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
-    validates :visibility_after_embargo, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
-    validates :visibility_after_embargo, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
+    validates :embargo_end_date, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
+    validates :item_type, presence: true
+    validates :languages, presence: true
     validates :member_of_paths, presence: true
     validates :title, presence: true
-    validates :languages, presence: true
-    validates :item_type, presence: true
-    validate :communities_and_collections_validations
-    validate :language_validations
-    validate :license_and_rights_validations
-    validate :visibility_after_embargo_validations
-    validate :item_type_and_publication_status_validations
+    validates :visibility_after_embargo, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
+    validates :visibility_after_embargo, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
+    validate :communities_and_collections_must_exist
+    validate :item_type_uri_must_be_in_vocabulary
+    validate :language_uris_must_be_in_vocabulary
+    validate :license_uri_must_be_in_vocabulary
+    validate :license_xor_rights_must_be_present
+    validate :publication_status_must_appear_only_for_articles
+    validate :publication_status_uri_must_be_in_vocabulary
+    validate :visibility_after_embargo_must_be_valid
 
     before_validation do
       # TODO: for theses, the sort_year attribute should be derived from ual:graduationDate
@@ -119,23 +134,8 @@ class Item < JupiterCore::LockedLdpObject
       end
     end
 
-    def communities_and_collections_validations
-      return if member_of_paths.blank?
-      member_of_paths.each do |path|
-        community_id, collection_id = path.split('/')
-        community = Community.find_by(community_id)
-        errors.add(:member_of_paths, :community_not_found, id: community_id) if community.blank?
-        collection = Collection.find_by(collection_id)
-        errors.add(:member_of_paths, :collection_not_found, id: collection_id) if collection.blank?
-      end
-    end
-
     def add_to_path(community_id, collection_id)
       self.member_of_paths += ["#{community_id}/#{collection_id}"]
-      # TODO: also add the collection (not the community) to the Item's memberOf relation, as metadata
-      # wants to continue to model this relationship in pure PCDM terms, and member_of_path is really for our needs
-      # so that we can facet by community and/or collection properly
-      # TODO: add collection_id to member_of_collections
     end
 
     def add_communities_and_collections(communities, collections)
@@ -174,41 +174,64 @@ class Item < JupiterCore::LockedLdpObject
       end
     end
 
-    def language_validations
-      languages.each do |lang|
-        uri_validation(lang, :languages, :language)
+    def communities_and_collections_must_exist
+      return if member_of_paths.blank?
+      member_of_paths.each do |path|
+        community_id, collection_id = path.split('/')
+        community = Community.find_by(community_id)
+        errors.add(:member_of_paths, :community_not_found, id: community_id) if community.blank?
+        collection = Collection.find_by(collection_id)
+        errors.add(:member_of_paths, :collection_not_found, id: collection_id) if collection.blank?
       end
     end
 
-    def license_and_rights_validations
+    def language_uris_must_be_in_vocabulary
+      languages.each do |lang|
+        errors.add(:languages, :not_recognized) unless ::CONTROLLED_VOCABULARIES[:language].from_uri(lang).present?
+      end
+    end
+
+    def license_xor_rights_must_be_present
       # Must have one of license or rights, not both
       if license.blank?
         errors.add(:base, :need_either_license_or_rights) if rights.blank?
       else
-        # Controlled vocabulary check
-        uri_validation(license, :license)
         errors.add(:base, :not_both_license_and_rights) if rights.present?
       end
     end
 
-    def visibility_after_embargo_validations
+    def license_uri_must_be_in_vocabulary
+      return unless license.present?
+      errors.add(:license, :not_recognized) unless ::CONTROLLED_VOCABULARIES[:license].from_uri(license).present?
+    end
+
+    def visibility_after_embargo_must_be_valid
       return if visibility_after_embargo.nil?
       return if VISIBILITIES_AFTER_EMBARGO.include?(visibility_after_embargo)
       errors.add(:visibility_after_embargo, :not_recognized)
     end
 
-    def item_type_and_publication_status_validations
-      return unless uri_validation(item_type, :item_type)
-      code = CONTROLLED_VOCABULARIES[:item_type].uri_to_code(item_type)
-      if code == 'article'
-        if publication_status.blank?
-          errors.add(:publication_status, :required_for_article)
-        else
-          uri_validation(publication_status, :publication_status)
-        end
-      elsif publication_status.present?
+    def item_type_uri_must_be_in_vocabulary
+      return unless item_type.present?
+      label = ::CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
+      errors.add(:item_type, :not_recognized) unless label.present?
+    end
+
+    def publication_status_must_appear_only_for_articles
+      label = ::CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
+      return unless label.present?
+      if label == :article && publication_status.blank?
+        errors.add(:publication_status, :required_for_article)
+      elsif label != :article && publication_status.present?
         errors.add(:publication_status, :must_be_absent_for_non_articles)
       end
+    end
+
+    def publication_status_uri_must_be_in_vocabulary
+      return unless publication_status.present?
+      label = ::CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
+      return unless label == :article
+      errors.add(:publication_status, :not_recognized) unless ::CONTROLLED_VOCABULARIES[:publication_status].from_uri(publication_status).present?
     end
   end
 

@@ -529,15 +529,6 @@ module JupiterCore
             JupiterCore::Indexer
           end
 
-          # Utility method for creating validations based on controlled vocabularies
-          def uri_validation(value, attribute, vocabulary = nil)
-            # Most (all?) of the time the controlled vocabulary is named after the attribute
-            vocabulary = attribute if vocabulary.nil?
-            return true if ::CONTROLLED_VOCABULARIES[vocabulary].any? { |term| term[:uri] == value }
-            errors.add(attribute, :not_recognized)
-            false
-          end
-
           # Methods defined on the +owning_object+ can be called by the "unlocked" methods defined on the ActiveFedora
           # object
           def method_missing(name, *args, &block)

@@ -33,7 +33,7 @@ class CreateDraftItemTables < ActiveRecord::Migration[5.1]
 
       t.json :creators, array: true
       t.json :subjects, array: true
-      t.json :member_of_paths
+      t.json :member_of_paths, array: true
       t.json :contributors, array: true
       t.json :places, array: true
       t.json :time_periods, array: true

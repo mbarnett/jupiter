@@ -1,8 +1,4 @@
----
 publication_status:
-  - code: published
-    uri: http://purl.org/ontology/bibo/status#published
-  - code: draft
-    uri: http://purl.org/ontology/bibo/status#draft
-  - code: submitted
-    uri: http://vivoweb.org/ontology/core#submitted
+  published: http://purl.org/ontology/bibo/status#published
+  draft: http://purl.org/ontology/bibo/status#draft
+  submitted: http://vivoweb.org/ontology/core#submitted
