@@ -7,7 +7,7 @@ config_files = Dir.glob(Rails.root.join('config', 'controlled_vocabularies', '*.
 
 config_files.each do |file|
   config = YAML.safe_load(File.open(file)).deep_symbolize_keys.freeze
-  raise VocabularyInvalidError, "There should be only one top-level vocabulary name key" unless config.keys.count == 1
+  raise VocabularyInvalidError, 'There should be only one top-level vocabulary name key' unless config.keys.count == 1
   vocab_name = config.keys.first
   uri_mappings = config[vocab_name].invert
   controlled_vocabularies[vocab_name] = OpenStruct.new(config[vocab_name]).tap do |vocab|

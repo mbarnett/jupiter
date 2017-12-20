@@ -89,7 +89,7 @@ class Item < JupiterCore::LockedLdpObject
     attrs = draft_item.attributes.symbolize_keys
     attrs.delete(:id)
     attrs[:visibility] = CONTROLLED_VOCABULARIES[:visibility].public if attrs[:visibility] == 'open_access'
-    attrs[:visibility_after_embargo] = nil if attrs[:embargo_end_date] == nil
+    attrs[:visibility_after_embargo] = nil if attrs[:embargo_end_date].nil?
     attrs[:owner] = attrs[:user_id]
 
     attrs[:languages] = []
@@ -108,11 +108,11 @@ class Item < JupiterCore::LockedLdpObject
   unlocked do
     validates :embargo_end_date, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
     validates :embargo_end_date, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
-    validates :item_type, presence: true, uri: {in_vocabulary: :item_type}
-    validates :languages, presence: true, uri: {in_vocabulary: :language}
+    validates :item_type, presence: true, uri: { in_vocabulary: :item_type }
+    validates :languages, presence: true, uri: { in_vocabulary: :language }
     validates :license, uri: { in_vocabulary: :license }
     validates :member_of_paths, presence: true
-    validates :publication_status, uri: {in_vocabulary: :publication_status}
+    validates :publication_status, uri: { in_vocabulary: :publication_status }
     validates :title, presence: true
     validates :visibility_after_embargo, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
     validates :visibility_after_embargo, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
