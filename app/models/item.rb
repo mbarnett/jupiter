@@ -108,19 +108,17 @@ class Item < JupiterCore::LockedLdpObject
   unlocked do
     validates :embargo_end_date, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
     validates :embargo_end_date, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
-    validates :item_type, presence: true
-    validates :languages, presence: true
+    validates :item_type, presence: true, uri: {in_vocabulary: :item_type}
+    validates :languages, presence: true, uri: {in_vocabulary: :language}
+    validates :license, uri: { in_vocabulary: :license }
     validates :member_of_paths, presence: true
+    validates :publication_status, uri: {in_vocabulary: :publication_status}
     validates :title, presence: true
     validates :visibility_after_embargo, absence: true, if: ->(item) { item.visibility != VISIBILITY_EMBARGO }
     validates :visibility_after_embargo, presence: true, if: ->(item) { item.visibility == VISIBILITY_EMBARGO }
     validate :communities_and_collections_must_exist
-    validate :item_type_uri_must_be_in_vocabulary
-    validate :language_uris_must_be_in_vocabulary
-    validate :license_uri_must_be_in_vocabulary
     validate :license_xor_rights_must_be_present
     validate :publication_status_must_appear_only_for_articles
-    validate :publication_status_uri_must_be_in_vocabulary
     validate :visibility_after_embargo_must_be_valid
 
     before_validation do
@@ -185,12 +183,6 @@ class Item < JupiterCore::LockedLdpObject
       end
     end
 
-    def language_uris_must_be_in_vocabulary
-      languages.each do |lang|
-        errors.add(:languages, :not_recognized) unless ::CONTROLLED_VOCABULARIES[:language].from_uri(lang).present?
-      end
-    end
-
     def license_xor_rights_must_be_present
       # Must have one of license or rights, not both
       if license.blank?
@@ -200,38 +192,18 @@ class Item < JupiterCore::LockedLdpObject
       end
     end
 
-    def license_uri_must_be_in_vocabulary
-      return unless license.present?
-      errors.add(:license, :not_recognized) unless ::CONTROLLED_VOCABULARIES[:license].from_uri(license).present?
-    end
-
     def visibility_after_embargo_must_be_valid
       return if visibility_after_embargo.nil?
       return if VISIBILITIES_AFTER_EMBARGO.include?(visibility_after_embargo)
       errors.add(:visibility_after_embargo, :not_recognized)
     end
 
-    def item_type_uri_must_be_in_vocabulary
-      return unless item_type.present?
-      label = ::CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
-      errors.add(:item_type, :not_recognized) unless label.present?
-    end
-
     def publication_status_must_appear_only_for_articles
-      label = ::CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
-      return unless label.present?
-      if label == :article && publication_status.blank?
+      if item_type == ::CONTROLLED_VOCABULARIES[:item_type].article && publication_status.blank?
         errors.add(:publication_status, :required_for_article)
-      elsif label != :article && publication_status.present?
+      elsif item_type != ::CONTROLLED_VOCABULARIES[:item_type].article && publication_status.present?
         errors.add(:publication_status, :must_be_absent_for_non_articles)
       end
-    end
-
-    def publication_status_uri_must_be_in_vocabulary
-      return unless publication_status.present?
-      label = ::CONTROLLED_VOCABULARIES[:item_type].from_uri(item_type)
-      return unless label == :article
-      errors.add(:publication_status, :not_recognized) unless ::CONTROLLED_VOCABULARIES[:publication_status].from_uri(publication_status).present?
     end
   end
 

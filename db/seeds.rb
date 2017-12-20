@@ -255,7 +255,7 @@ if Rails.env.development? || Rails.env.uat?
 
   collection = Collection.new_locked_ldp_object(
     owner: admin.id,
-    title: "The Department of #{Faker::Lovecraft.words(3)}",
+    title: "The Department of #{Faker::Lovecraft.words(3).join(' ')}",
     community_id: community.id,
     description: Faker::Lovecraft.sentence(20)
   ).unlock_and_fetch_ldp_object(&:save!)
