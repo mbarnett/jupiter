@@ -732,7 +732,7 @@ class JupiterCore::LockedLdpObject
     # other objects already be indexed! This isn't a solution to any desire to avoid adding data to Fedora!
     # See recover.rake and collection.rb's note on +additional_search_index :community_title` for an example of the
     # ordering dependency issues that are created if the Solr index depends on the existence of other records.
-    def additional_search_index(name, solrize_for:, type: :symbol, as:)
+    def additional_search_index(name, solrize_for:, type: :string, as:)
       raise JupiterCore::PropertyInvalidError unless as.respond_to?(:call)
       raise JupiterCore::PropertyInvalidError if name.blank?
       raise JupiterCore::PropertyInvalidError unless type.present? && type.is_a?(Symbol)
@@ -743,7 +743,7 @@ class JupiterCore::LockedLdpObject
       solr_names = []
       solrize_for.each do |solr_role|
         descriptor = SOLR_DESCRIPTOR_MAP[solr_role]
-        solr_name = Solrizer.solr_name(name, descriptor, type: type)
+        solr_name = JupiterCore::SolrNameMangler.mangled_name_for(name, role: solr_role, type: type)
         solr_names << solr_name
         self.reverse_solr_name_cache[solr_name] = name
         self.facets << solr_name if solr_role == :facet
@@ -752,6 +752,7 @@ class JupiterCore::LockedLdpObject
 
       self.solr_calc_attributes[name] = { type: type,
                                           solrize_for: solrize_for,
+                                          # TODO: solr_descriptors is in Solrizer-speak, it should go away
                                           solr_descriptors: solr_descriptors,
                                           solr_names: solr_names,
                                           callable: as }
@@ -782,7 +783,7 @@ class JupiterCore::LockedLdpObject
         multiple: multiple,
         solrize_for: [:search],
         type: :string,
-        solr_names: [Solrizer.solr_name(as_name, SOLR_DESCRIPTOR_MAP[:search], type: :string)]
+        solr_names: [JupiterCore::SolrNameMangler.mangled_name_for(as_name, role: :search, type: :string)]
       }
 
       self.association_indexes ||= []
@@ -797,8 +798,8 @@ class JupiterCore::LockedLdpObject
                                            }
       # add a reader to the locked object
       define_cached_reader(as_name, multiple: multiple, type: :string,
-                                    canonical_solr_name: Solrizer.solr_name(as_name,
-                                                                            SOLR_DESCRIPTOR_MAP[:search],
+                                    canonical_solr_name: JupiterCore::SolrNameMangler.mangled_name_for(as_name,
+                                                                            role: :search,
                                                                             type: :string),
                                     specialized_ldp_reader: lambda {
                                                               self.send(association)&.map do |member|
@@ -859,7 +860,7 @@ class JupiterCore::LockedLdpObject
       # but it helps
       raise JupiterCore::PropertyInvalidError if solrize_for.count { |item| !SOLR_DESCRIPTOR_MAP.key?(item) } > 0
 
-      unless [:string, :text, :path, :boolean, :date, :integer, :float, :json_array].include?(type)
+      unless JupiterCore::SolrClient.valid_solr_type?(type)
         raise JupiterCore::PropertyInvalidError, "Unknown type #{type}"
       end
 
@@ -871,19 +872,19 @@ class JupiterCore::LockedLdpObject
 
       solr_name_cache ||= []
       solrize_for.each do |descriptor|
-        solr_name = Solrizer.solr_name(name, SOLR_DESCRIPTOR_MAP[descriptor], type: solr_type)
+        solr_name = JupiterCore::SolrNameMangler.mangled_name_for(name, type: solr_type, role: descriptor)
         solr_name_cache << solr_name
         self.reverse_solr_name_cache[solr_name] = name
       end
 
       facet_name = if solrize_for.include?(:facet)
-                     Solrizer.solr_name(name, SOLR_DESCRIPTOR_MAP[:facet], type: solr_type)
+                     JupiterCore::SolrNameMangler.mangled_name_for(name, role: :facet, type: solr_type)
                    elsif solrize_for.include?(:range_facet)
-                     range_name = Solrizer.solr_name(name, SOLR_DESCRIPTOR_MAP[:range_facet], type: solr_type)
+                     range_name = JupiterCore::SolrNameMangler.mangled_name_for(name, role: :range_facet, type: solr_type)
                      self.ranges << range_name
                      range_name
                    elsif solrize_for.include?(:pathing)
-                     Solrizer.solr_name(name, SOLR_DESCRIPTOR_MAP[:pathing], type: solr_type)
+                     JupiterCore::SolrNameMangler.mangled_name_for(name, role: :pathing, type: solr_type)
                    end
 
       self.facets << facet_name if facet_name.present?
