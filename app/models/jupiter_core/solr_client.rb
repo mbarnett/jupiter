@@ -1,4 +1,5 @@
 class JupiterCore::SolrClient
+
   include Singleton
 
   SOLR_ROLES = [:search, :sort, :facet, :exact_match, :pathing, :range_facet].freeze

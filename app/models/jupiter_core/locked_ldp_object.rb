@@ -799,8 +799,8 @@ class JupiterCore::LockedLdpObject
       # add a reader to the locked object
       define_cached_reader(as_name, multiple: multiple, type: :string,
                                     canonical_solr_name: JupiterCore::SolrNameMangler.mangled_name_for(as_name,
-                                                                            role: :search,
-                                                                            type: :string),
+                                                                                                       role: :search,
+                                                                                                       type: :string),
                                     specialized_ldp_reader: lambda {
                                                               self.send(association)&.map do |member|
                                                                 member.id
@@ -880,7 +880,9 @@ class JupiterCore::LockedLdpObject
       facet_name = if solrize_for.include?(:facet)
                      JupiterCore::SolrNameMangler.mangled_name_for(name, role: :facet, type: solr_type)
                    elsif solrize_for.include?(:range_facet)
-                     range_name = JupiterCore::SolrNameMangler.mangled_name_for(name, role: :range_facet, type: solr_type)
+                     range_name = JupiterCore::SolrNameMangler.mangled_name_for(name,
+                                                                                role: :range_facet,
+                                                                                type: solr_type)
                      self.ranges << range_name
                      range_name
                    elsif solrize_for.include?(:pathing)
